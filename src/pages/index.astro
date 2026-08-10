@@ -1,0 +1,98 @@
+---
+import Base from '../layouts/Base.astro';
+import IndexList from '../components/IndexList.astro';
+import { getCollection } from 'astro:content';
+
+const projects = (await getCollection('projects'))
+  .filter((p) => p.data.featured)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const notes = (await getCollection('notes'))
+  .filter((n) => !n.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+---
+
+<Base
+  title="Stevie Thomas — hitting, swing data, and side projects"
+  description="Hitting coach at Driveline Baseball. Swing mechanics, public baseball data, and whatever I'm chewing on this month."
+>
+  <section style="padding: clamp(3rem, 9vw, 6.5rem) 0 0;">
+    <p class="eyebrow reveal" style="--i:0">Hitting coach · Driveline Baseball</p>
+    <h1 class="reveal" style="--i:1">
+      I coach hitters, and I take the swing apart to figure out why it works.
+    </h1>
+    <p class="lede reveal" style="--i:2">
+      Most of my day is in the cage. The rest is spent on the question underneath it — what
+      separates a swing that finds the ball from one that misses by two inches. This is where I
+      keep the projects, the half-finished ideas, and the things I think are worth arguing about.
+    </p>
+  </section>
+
+  <section style="margin-top: clamp(3.5rem, 9vw, 6rem);">
+    <p class="section-label">Selected work</p>
+    <IndexList
+      items={projects.map((p) => ({
+        href: `/projects/${p.id}/`,
+        title: p.data.title,
+        summary: p.data.summary,
+        meta: String(p.data.date.getUTCFullYear()),
+        status: p.data.status,
+      }))}
+    />
+    <p style="margin-top: 1.4rem;">
+      <a
+        href="/projects/"
+        style="font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.13em; text-transform: uppercase; text-decoration: none; color: var(--muted);"
+        >All projects →</a
+      >
+    </p>
+  </section>
+
+  <section style="margin-top: clamp(3.5rem, 9vw, 6rem);">
+    <p class="section-label">Now</p>
+    <dl class="now">
+      <div>
+        <dt>In the cage</dt>
+        <dd>
+          Building out constrained competitive games for group hitting blocks — same reps, more
+          pressure, better transfer.
+        </dd>
+      </div>
+      <div>
+        <dt>On the laptop</dt>
+        <dd>
+          Mapping whiffs in three dimensions from public bat-tracking data, and trying to make the
+          model honest about what it doesn't know.
+        </dd>
+      </div>
+      <div>
+        <dt>Chewing on</dt>
+        <dd>
+          Motor learning, variability as a skill rather than a defect, and how much of "feel"
+          survives contact with a force plate.
+        </dd>
+      </div>
+    </dl>
+  </section>
+
+  {
+    notes.length > 0 && (
+      <section style="margin-top: clamp(3.5rem, 9vw, 6rem);">
+        <p class="section-label">Notes</p>
+        <IndexList
+          items={notes.map((n) => ({
+            href: `/notes/${n.id}/`,
+            title: n.data.title,
+            summary: n.data.summary,
+            meta: n.data.date.toLocaleDateString('en-US', {
+              month: 'short',
+              year: 'numeric',
+              timeZone: 'UTC',
+            }),
+          }))}
+        />
+      </section>
+    )
+  }
+</Base>

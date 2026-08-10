@@ -1,0 +1,39 @@
+---
+/**
+ * Numbered index rows, the site's one repeating structure. Used by the home
+ * page, the project index and the notes index.
+ */
+interface Item {
+  href: string;
+  title: string;
+  summary: string;
+  meta: string;
+  status?: string;
+}
+
+interface Props {
+  items: Item[];
+  start?: number;
+}
+
+const { items, start = 1 } = Astro.props;
+---
+
+<div class="index">
+  {
+    items.map((item, i) => (
+      <a class="row reveal" href={item.href} style={`--i:${i + 1}`}>
+        <span class="row__num">{String(i + start).padStart(2, '0')}</span>
+        <div>
+          <h2 class="row__title">{item.title}</h2>
+          <p class="row__summary">{item.summary}</p>
+        </div>
+        <span class="row__meta">
+          {item.status && <span class={`status--${item.status}`}>{item.status}</span>}
+          {item.status && ' · '}
+          {item.meta}
+        </span>
+      </a>
+    ))
+  }
+</div>

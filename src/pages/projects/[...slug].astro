@@ -1,0 +1,45 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<Base title={`${entry.data.title} — Stevie Thomas`} description={entry.data.summary}>
+  <article style="padding: clamp(2.5rem, 7vw, 4.5rem) 0 0;">
+    <p class="eyebrow reveal" style="--i:0">
+      {entry.data.status} · {entry.data.date.getUTCFullYear()}
+    </p>
+    <h1 class="reveal" style="--i:1">{entry.data.title}</h1>
+    <p class="lede reveal" style="--i:2">{entry.data.summary}</p>
+
+    {
+      entry.data.tags.length > 0 && (
+        <ul class="tags reveal" style="--i:3">
+          {entry.data.tags.map((tag) => (
+            <li>{tag}</li>
+          ))}
+        </ul>
+      )
+    }
+
+    <div class="prose">
+      <Content />
+      {
+        entry.data.link && (
+          <p>
+            <a href={entry.data.link}>Repository / write-up →</a>
+          </p>
+        )
+      }
+    </div>
+
+    <a class="backlink" href="/projects/">← All projects</a>
+  </article>
+</Base>

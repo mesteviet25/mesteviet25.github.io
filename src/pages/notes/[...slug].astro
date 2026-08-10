@@ -1,0 +1,35 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const notes = (await getCollection('notes')).filter((n) => !n.data.draft);
+  return notes.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<Base title={`${entry.data.title} — Stevie Thomas`} description={entry.data.summary}>
+  <article style="padding: clamp(2.5rem, 7vw, 4.5rem) 0 0;">
+    <p class="eyebrow reveal" style="--i:0">
+      {
+        entry.data.date.toLocaleDateString('en-US', {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+          timeZone: 'UTC',
+        })
+      }
+    </p>
+    <h1 class="reveal" style="--i:1">{entry.data.title}</h1>
+    <p class="lede reveal" style="--i:2">{entry.data.summary}</p>
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    <a class="backlink" href="/notes/">← All notes</a>
+  </article>
+</Base>

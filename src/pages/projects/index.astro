@@ -1,0 +1,35 @@
+---
+import Base from '../../layouts/Base.astro';
+import IndexList from '../../components/IndexList.astro';
+import { getCollection } from 'astro:content';
+
+const projects = (await getCollection('projects')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+---
+
+<Base
+  title="Projects — Stevie Thomas"
+  description="Swing analysis, public baseball data work, and coaching frameworks."
+>
+  <section style="padding: clamp(2.5rem, 7vw, 4.5rem) 0 0;">
+    <p class="eyebrow reveal" style="--i:0">Index</p>
+    <h1 class="reveal" style="--i:1">Projects</h1>
+    <p class="lede reveal" style="--i:2">
+      Some of these are finished. Most aren't. Anything built on athlete data stays behind the
+      wall — what's here is either public data or the method described on its own.
+    </p>
+  </section>
+
+  <section style="margin-top: clamp(2.5rem, 7vw, 4rem);">
+    <IndexList
+      items={projects.map((p) => ({
+        href: `/projects/${p.id}/`,
+        title: p.data.title,
+        summary: p.data.summary,
+        meta: String(p.data.date.getUTCFullYear()),
+        status: p.data.status,
+      }))}
+    />
+  </section>
+</Base>
