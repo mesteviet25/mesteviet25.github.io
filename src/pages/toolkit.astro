@@ -1,0 +1,99 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Toolkit — Stevie Thomas"
+  description="The tools, languages, and habits behind the projects. Mostly Python, a lot of plumbing, and a strong preference for things I can read."
+>
+  <section style="padding: clamp(2.5rem, 7vw, 4.5rem) 0 0;">
+    <p class="eyebrow reveal" style="--i:0">Toolkit</p>
+    <h1 class="reveal" style="--i:1">What I build with</h1>
+
+    <div class="prose">
+      <p>
+        None of this is exotic. The interesting part of the work is almost never the tool — it is
+        knowing what the number means. But people ask, so here it is.
+      </p>
+
+      <h3>The core</h3>
+      <ul>
+        <li>
+          <strong>Python</strong> for essentially everything. pandas and numpy for the data,
+          scikit-learn when a model earns its place, scipy for the statistics. If a project needs
+          something more exotic than that, my first suspicion is that I have overcomplicated it.
+        </li>
+        <li>
+          <strong>SQL</strong> more than I expected. Most analysis time is spent getting the right
+          rows out, not doing anything clever with them once they arrive.
+        </li>
+        <li>
+          <strong>MuJoCo</strong> for the physics work — forward dynamics, torque-driven models,
+          anything where I want to ask what force produced a motion rather than describe the motion.
+        </li>
+        <li>
+          <strong>ffmpeg</strong> for all video. Every coaching clip, comparison edit, and overlay on
+          this site went through it. It is the single highest-leverage tool I have learned that is
+          not a language.
+        </li>
+      </ul>
+
+      <h3>Habits that have paid for themselves</h3>
+      <ul>
+        <li>
+          <strong>Fail loudly.</strong> No silent fallbacks, no bare exception handlers. If something
+          is wrong I want a stack trace immediately, not a plausible number three steps downstream. A
+          caught exception that returns a default is a bug that has been given permission to travel.
+        </li>
+        <li>
+          <strong>Less code.</strong> A helper function that exists to be called twice is usually
+          worse than the two lines it replaced. Abstraction has a carrying cost and it gets paid by
+          whoever reads it next, who is me.
+        </li>
+        <li>
+          <strong>Write the spec first.</strong> Every project that went well has a document written
+          before the code that says what question it answers and what would count as an answer.
+          Every project that wandered does not.
+        </li>
+        <li>
+          <strong>Cache the fetch, never the conclusion.</strong> Pulled data gets saved so I am not
+          hammering someone's API. Derived results get regenerated every time, because a stale
+          conclusion is indistinguishable from a fresh one until it embarrasses you.
+        </li>
+        <li>
+          <strong>Write down the traps.</strong> Every project has a file of things that cost me an
+          hour — the null first frame, the frame rate that lies, the path separator that breaks a
+          parser. It is the most reread document in every repo.
+        </li>
+      </ul>
+
+      <h3>This site</h3>
+      <p>
+        Astro, deployed by GitHub Actions to GitHub Pages. Content is markdown files in a folder;
+        adding a page means writing one and pushing. No CMS, no database, no build step I cannot
+        explain. Type is self-hosted rather than pulled from a font CDN, which is both faster and
+        nobody else's business.
+      </p>
+      <p>
+        Deliberately not branded like my employer. This is a personal site and it should look like a
+        person made it.
+      </p>
+
+      <h3>What I avoid</h3>
+      <ul>
+        <li>
+          Dashboards as a substitute for understanding. A tile is an answer to a question somebody
+          else chose.
+        </li>
+        <li>
+          Models I cannot explain to a hitter. If the only account of why the output is what it is
+          involves the word "embedding", it is not going to change how anyone swings.
+        </li>
+        <li>
+          Anything that requires the athlete data to leave the building. Which rules out a lot of
+          otherwise convenient tools, and is not negotiable.
+        </li>
+      </ul>
+    </div>
+  </section>
+</Base>

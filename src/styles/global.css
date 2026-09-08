@@ -151,7 +151,8 @@ a:hover {
 
 .nav {
   display: flex;
-  gap: 1.4rem;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.4rem;
   font-family: var(--mono);
   font-size: 0.72rem;
   letter-spacing: 0.11em;
@@ -306,6 +307,16 @@ h3 {
 }
 
 @media (max-width: 40rem) {
+  .masthead {
+    gap: 0.75rem 1.5rem;
+  }
+
+  .nav {
+    gap: 0.5rem 1rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.09em;
+  }
+
   .row {
     grid-template-columns: 2.4rem 1fr;
     gap: 0 1rem;
