@@ -1,8 +1,8 @@
 import { defineConfig } from 'astro/config';
 
-// Repo is stephen-thomas-drivelinebaseball.github.io, so the site lives at the
-// domain root and needs no `base`. When this ports to a personal account or a
-// custom domain, change `site` here and nothing else.
+// Repo is mesteviet25.github.io, so the site lives at the domain root and needs
+// no `base`. If this ever moves to a custom domain, change `site` here, add
+// public/CNAME, and nothing else.
 export default defineConfig({
-  site: 'https://stephen-thomas-drivelinebaseball.github.io',
+  site: 'https://mesteviet25.github.io',
 });

@@ -2,7 +2,7 @@
 
 Astro 5 static site, deployed to GitHub Pages by GitHub Actions on every push to `main`.
 
-Live at **https://stephen-thomas-drivelinebaseball.github.io**
+Live at **https://mesteviet25.github.io**
 
 ---
 
@@ -79,11 +79,23 @@ src/
 public/fonts/              self-hosted woff2 — no external font CDN
 ```
 
-## Moving to a personal account or a custom domain
+## Account and identity
 
-1. Change `site` in `astro.config.mjs`.
-2. For a custom domain: add `public/CNAME` containing the bare domain, point DNS at GitHub Pages,
-   and set the domain under repo Settings → Pages.
+This repo lives on the **personal** GitHub account `mesteviet25`, not the Driveline account.
+The remote is written as `https://mesteviet25@github.com/mesteviet25/mesteviet25.github.io.git` --
+the username in the URL is load-bearing. Git Credential Manager keys stored credentials by host
+*plus* username, so that form keeps this account's credential separate from the
+`stephen-thomas-drivelinebaseball` entry already on this machine. Never run `gh auth setup-git`;
+it installs a global helper that hijacks whichever identity it was authed as.
+
+This repo is **public** because a GitHub user site (`<username>.github.io`) must be public for
+Pages to build on a free plan. That is why the publishing rules below are not optional.
+
+## Adding a custom domain
+
+1. Add `public/CNAME` containing the bare domain.
+2. Change `site` in `astro.config.mjs` to match.
+3. Point DNS at GitHub Pages and set the domain under repo Settings → Pages.
 
 No other file needs to change.
 
