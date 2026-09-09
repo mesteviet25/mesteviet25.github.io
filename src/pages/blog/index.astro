@@ -3,27 +3,27 @@ import Base from '../../layouts/Base.astro';
 import IndexList from '../../components/IndexList.astro';
 import { getCollection } from 'astro:content';
 
-const notes = (await getCollection('notes'))
+const posts = (await getCollection('blog'))
   .filter((n) => !n.data.draft)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 ---
 
-<Base title="Notes — Stevie Thomas" description="Short pieces on hitting, data, and coaching.">
+<Base title="Blog — Stevie Thomas" description="Writing on hitting, swing data, coaching, and whatever else is holding my attention.">
   <section style="padding: clamp(2.5rem, 7vw, 4.5rem) 0 0;">
     <p class="eyebrow reveal" style="--i:0">Index</p>
-    <h1 class="reveal" style="--i:1">Notes</h1>
+    <h1 class="reveal" style="--i:1">Blog</h1>
     <p class="lede reveal" style="--i:2">
-      Shorter than a project, longer than a tweet. Mostly things I wanted written down before I
-      lost the thread.
+      Posts on hitting, data, and coaching. Mostly things I wanted written down before I lost the
+      thread.
     </p>
   </section>
 
   <section style="margin-top: clamp(2.5rem, 7vw, 4rem);">
     {
-      notes.length > 0 ? (
+      posts.length > 0 ? (
         <IndexList
-          items={notes.map((n) => ({
-            href: `/notes/${n.id}/`,
+          items={posts.map((n) => ({
+            href: `/blog/${n.id}/`,
             title: n.data.title,
             summary: n.data.summary,
             meta: n.data.date.toLocaleDateString('en-US', {

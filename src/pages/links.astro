@@ -1,0 +1,49 @@
+---
+import Base from '../layouts/Base.astro';
+import { linkGroups } from '../data/links';
+
+// only render groups that actually have links in them, so half-filled sections
+// never ship as empty headings
+const groups = linkGroups.filter((g) => g.links.length > 0);
+---
+
+<Base
+  title="Links — Stevie Thomas"
+  description="Where to find me, and the people, tools, and sources worth your time."
+>
+  <section style="padding: clamp(2.5rem, 7vw, 4.5rem) 0 0;">
+    <p class="eyebrow reveal" style="--i:0">Links</p>
+    <h1 class="reveal" style="--i:1">Elsewhere</h1>
+    <p class="lede reveal" style="--i:2">
+      Where to find me, and a short list of things I think are worth reading. Kept short on purpose
+      — a links page nobody prunes is a bookmark bar with extra steps.
+    </p>
+  </section>
+
+  {
+    groups.map((group) => (
+      <section style="margin-top: clamp(2.5rem, 7vw, 4rem);">
+        <p class="section-label">{group.title}</p>
+        {group.blurb && (
+          <p style="color: var(--muted); max-width: 46ch; margin: 0.9rem 0 0;">{group.blurb}</p>
+        )}
+        <ul class="linklist">
+          {group.links.map((link) => (
+            <li>
+              <a href={link.href}>{link.label}</a>
+              {link.note && <span>{link.note}</span>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+
+  {
+    groups.length === 0 && (
+      <p style="margin-top: 2.5rem; color: var(--muted);">
+        Nothing here yet — add entries to <code>src/data/links.ts</code>.
+      </p>
+    )
+  }
+</Base>

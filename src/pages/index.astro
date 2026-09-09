@@ -7,7 +7,7 @@ const projects = (await getCollection('projects'))
   .filter((p) => p.data.featured)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
-const notes = (await getCollection('notes'))
+const posts = (await getCollection('blog'))
   .filter((n) => !n.data.draft)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3);
@@ -62,27 +62,27 @@ const notes = (await getCollection('notes'))
       <div>
         <dt>On the laptop</dt>
         <dd>
-          Mapping whiffs in three dimensions from public bat-tracking data, and rebuilding a
-          torque-driven swing model after it failed to reproduce its own results.
+          Mapping whiffs in three dimensions from public bat-tracking data, and trying to make the
+          model honest about what it doesn't know.
         </dd>
       </div>
       <div>
         <dt>Chewing on</dt>
         <dd>
-          Motor learning, variability as a skill rather than a defect, and the difference between a
-          pattern across hitters and a prediction about one.
+          Motor learning, variability as a skill rather than a defect, and how much of "feel"
+          survives contact with a force plate.
         </dd>
       </div>
     </dl>
   </section>
 
   {
-    notes.length > 0 && (
+    posts.length > 0 && (
       <section style="margin-top: clamp(3.5rem, 9vw, 6rem);">
-        <p class="section-label">Notes</p>
+        <p class="section-label">Writing</p>
         <IndexList
-          items={notes.map((n) => ({
-            href: `/notes/${n.id}/`,
+          items={posts.map((n) => ({
+            href: `/blog/${n.id}/`,
             title: n.data.title,
             summary: n.data.summary,
             meta: n.data.date.toLocaleDateString('en-US', {

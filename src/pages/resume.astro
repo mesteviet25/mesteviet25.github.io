@@ -1,0 +1,114 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import Base from '../layouts/Base.astro';
+import { intro, roles, education, skills, writing } from '../data/resume';
+
+// drop a PDF at public/resume.pdf and the download link appears; no file, no link
+const hasPdf = fs.existsSync(path.join(process.cwd(), 'public', 'resume.pdf'));
+---
+
+<Base
+  title="Resume — Stevie Thomas"
+  description="Hitting coach at Driveline Baseball. Coaching, biomechanics, and the tooling in between."
+>
+  <section style="padding: clamp(2.5rem, 7vw, 4.5rem) 0 0;">
+    <p class="eyebrow reveal" style="--i:0">Resume</p>
+    <h1 class="reveal" style="--i:1">Stevie Thomas</h1>
+    <p class="lede reveal" style="--i:2">{intro}</p>
+
+    {
+      hasPdf && (
+        <p style="margin-top: 1.6rem;">
+          <a
+            href="/resume.pdf"
+            style="font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.13em; text-transform: uppercase; text-decoration: none; color: var(--muted);"
+          >
+            Download PDF →
+          </a>
+        </p>
+      )
+    }
+  </section>
+
+  {
+    roles.length > 0 && (
+      <section style="margin-top: clamp(2.5rem, 7vw, 4rem);">
+        <p class="section-label">Experience</p>
+        {roles.map((role) => (
+          <article class="cv-role">
+            <div class="cv-role__head">
+              <h3>
+                {role.title} <span>· {role.org}</span>
+              </h3>
+              <p class="cv-role__dates">
+                {role.start} — {role.end}
+                {role.location && <> · {role.location}</>}
+              </p>
+            </div>
+            {role.blurb && <p>{role.blurb}</p>}
+            {role.points && role.points.length > 0 && (
+              <ul>
+                {role.points.map((pt) => (
+                  <li>{pt}</li>
+                ))}
+              </ul>
+            )}
+          </article>
+        ))}
+      </section>
+    )
+  }
+
+  {
+    skills.length > 0 && (
+      <section style="margin-top: clamp(2.5rem, 7vw, 4rem);">
+        <p class="section-label">Skills</p>
+        {skills.map((s) => (
+          <article class="cv-role">
+            <div class="cv-role__head">
+              <h3>{s.group}</h3>
+            </div>
+            <ul>
+              {s.items.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </section>
+    )
+  }
+
+  {
+    education.length > 0 && (
+      <section style="margin-top: clamp(2.5rem, 7vw, 4rem);">
+        <p class="section-label">Education</p>
+        <ul class="linklist">
+          {education.map((e) => (
+            <li>
+              <strong>{e.primary}</strong>
+              {e.secondary && <span>{e.secondary}{e.meta ? ` · ${e.meta}` : ''}</span>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  {
+    writing.length > 0 && (
+      <section style="margin-top: clamp(2.5rem, 7vw, 4rem);">
+        <p class="section-label">Talks &amp; writing</p>
+        <ul class="linklist">
+          {writing.map((w) => (
+            <li>
+              <strong>{w.primary}</strong>
+              {w.secondary && <span>{w.secondary}{w.meta ? ` · ${w.meta}` : ''}</span>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+</Base>

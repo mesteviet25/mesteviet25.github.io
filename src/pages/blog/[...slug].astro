@@ -3,8 +3,8 @@ import Base from '../../layouts/Base.astro';
 import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
-  const notes = (await getCollection('notes')).filter((n) => !n.data.draft);
-  return notes.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+  const posts = (await getCollection('blog')).filter((n) => !n.data.draft);
+  return posts.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
 }
 
 const { entry } = Astro.props;
@@ -30,6 +30,6 @@ const { Content } = await render(entry);
       <Content />
     </div>
 
-    <a class="backlink" href="/notes/">← All notes</a>
+    <a class="backlink" href="/blog/">← All posts</a>
   </article>
 </Base>
