@@ -1,52 +1,46 @@
 ---
 import Base from '../layouts/Base.astro';
-import IndexList from '../components/IndexList.astro';
-import { getCollection } from 'astro:content';
-
-const projects = (await getCollection('projects'))
-  .filter((p) => p.data.featured)
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-
-const posts = (await getCollection('blog'))
-  .filter((n) => !n.data.draft)
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-  .slice(0, 3);
+import Fractal from '../components/Fractal.astro';
+import { resources } from '../data/resources';
 ---
 
 <Base
-  title="Stevie Thomas — hitting, swing data, and side projects"
-  description="Hitting coach at Driveline Baseball. Swing mechanics, public baseball data, and whatever I'm chewing on this month."
+  title="Stevie Thomas — hitting, swing data, and coaching resources"
+  description="Hitting coach at Driveline Baseball. Free, technical coaching resources on swing mechanics and bat tracking, built for coaches and players."
 >
-  <section style="padding: clamp(3rem, 9vw, 6.5rem) 0 0;">
-    <p class="eyebrow reveal" style="--i:0">Hitting coach · Driveline Baseball</p>
+  <section class="hero-wrap" style="padding: clamp(3rem, 9vw, 6.5rem) 0 0;">
+    <Fractal variant="hero" />
+    <p class="eyebrow eyebrow--grad reveal" style="--i:0">Hitting coach · Driveline Baseball</p>
     <h1 class="reveal" style="--i:1">
       I coach hitters, and I take the swing apart to figure out why it works.
     </h1>
     <p class="lede reveal" style="--i:2">
-      Most of my day is in the cage. The rest is spent on the question underneath it — what
-      separates a swing that finds the ball from one that misses by two inches. This is where I
-      keep the projects, the half-finished ideas, and the things I think are worth arguing about.
+      Most of my day is in the cage. The rest goes into the question underneath it — what separates a
+      swing that finds the ball from one that misses by two inches. I build the tools and write up
+      the answers, and I give the coaching ones away.
     </p>
   </section>
 
   <section style="margin-top: clamp(3.5rem, 9vw, 6rem);">
-    <p class="section-label">Selected work</p>
-    <IndexList
-      items={projects.map((p) => ({
-        href: `/projects/${p.id}/`,
-        title: p.data.title,
-        summary: p.data.summary,
-        meta: String(p.data.date.getUTCFullYear()),
-        status: p.data.status,
-      }))}
-    />
-    <p style="margin-top: 1.4rem;">
-      <a
-        href="/projects/"
-        style="font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.13em; text-transform: uppercase; text-decoration: none; color: var(--muted);"
-        >All projects →</a
-      >
+    <p class="section-label">Free coaching resources</p>
+    <p style="color: var(--muted); max-width: 52ch; margin: 0.7rem 0 0;">
+      Built to be used in the cage, not just read. No signup, no pitch.
     </p>
+
+    {
+      resources.map((r) => (
+        <a class="res-card reveal" href={`/resources/${r.slug}/`}>
+          <span class="res-card__kind">{r.kind}</span>
+          <h2 class="row__title">{r.title}</h2>
+          <p>{r.summary}</p>
+          <ul class="res-card__tags">
+            {r.tags.map((t) => (
+              <li>{t}</li>
+            ))}
+          </ul>
+        </a>
+      ))
+    }
   </section>
 
   <section style="margin-top: clamp(3.5rem, 9vw, 6rem);">
@@ -75,24 +69,4 @@ const posts = (await getCollection('blog'))
       </div>
     </dl>
   </section>
-
-  {
-    posts.length > 0 && (
-      <section style="margin-top: clamp(3.5rem, 9vw, 6rem);">
-        <p class="section-label">Writing</p>
-        <IndexList
-          items={posts.map((n) => ({
-            href: `/blog/${n.id}/`,
-            title: n.data.title,
-            summary: n.data.summary,
-            meta: n.data.date.toLocaleDateString('en-US', {
-              month: 'short',
-              year: 'numeric',
-              timeZone: 'UTC',
-            }),
-          }))}
-        />
-      </section>
-    )
-  }
 </Base>

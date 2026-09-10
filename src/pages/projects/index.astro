@@ -22,14 +22,22 @@ const projects = (await getCollection('projects')).sort(
   </section>
 
   <section style="margin-top: clamp(2.5rem, 7vw, 4rem);">
-    <IndexList
-      items={projects.map((p) => ({
-        href: `/projects/${p.id}/`,
-        title: p.data.title,
-        summary: p.data.summary,
-        meta: String(p.data.date.getUTCFullYear()),
-        status: p.data.status,
-      }))}
-    />
+    {
+      projects.length > 0 ? (
+        <IndexList
+          items={projects.map((p) => ({
+            href: `/projects/${p.id}/`,
+            title: p.data.title,
+            summary: p.data.summary,
+            meta: String(p.data.date.getUTCFullYear()),
+            status: p.data.status,
+          }))}
+        />
+      ) : (
+        <p style="color: var(--muted); margin: 0;">
+          Nothing here yet — projects will land here as they're fit to show.
+        </p>
+      )
+    }
   </section>
 </Base>

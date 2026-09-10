@@ -1,0 +1,45 @@
+---
+import Base from '../../layouts/Base.astro';
+import Fractal from '../../components/Fractal.astro';
+import { resources } from '../../data/resources';
+---
+
+<Base
+  title="Resources — Stevie Thomas"
+  description="Free, technical coaching resources on hitting: bat tracking, swing mechanics, and how to read the numbers."
+>
+  <section class="hero-wrap" style="padding: clamp(2.5rem, 7vw, 4.5rem) 0 0;">
+    <Fractal variant="divider" />
+    <p class="eyebrow eyebrow--grad reveal" style="--i:0">Resources</p>
+    <h1 class="reveal" style="--i:1">Coaching resources</h1>
+    <p class="lede reveal" style="--i:2">
+      The technical side of hitting, explained so you can actually use it. Built in the cage and
+      written to travel — hand these to a player, a parent, or a coach who is new to the numbers.
+    </p>
+  </section>
+
+  <section style="margin-top: clamp(2.5rem, 7vw, 4rem);">
+    <p class="section-label">Available now</p>
+
+    {
+      resources.map((r) => (
+        <a class="res-card reveal" href={`/resources/${r.slug}/`}>
+          <span class="res-card__kind">{r.kind}</span>
+          <h2 class="row__title">{r.title}</h2>
+          <p>{r.summary}</p>
+          <ul class="res-card__tags">
+            <li>{r.audience}</li>
+            {r.tags.map((t) => (
+              <li>{t}</li>
+            ))}
+          </ul>
+        </a>
+      ))
+    }
+
+    <p style="color: var(--muted); margin-top: 2rem; max-width: 52ch;">
+      More primers, drill sheets, and one-pagers are in the works. If there is something you wish
+      existed, <a href="https://x.com/stevie_t12">tell me</a>.
+    </p>
+  </section>
+</Base>

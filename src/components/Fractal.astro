@@ -1,0 +1,68 @@
+---
+/**
+ * A quiet fractal texture, generated at build time. One Clifford attractor
+ * traced as a single path, stroked with the blue->pink accent gradient.
+ * Decorative only — aria-hidden, no client JS, no animation.
+ */
+interface Props {
+  variant?: 'hero' | 'divider';
+  points?: number;
+}
+
+const { variant = 'hero', points = 1500 } = Astro.props;
+
+// Clifford attractor, the classic wandering-orb fractal. Deterministic seed.
+const a = -1.4;
+const b = 1.6;
+const c = 1.0;
+const d = 0.7;
+let x = 0.1;
+let y = 0.0;
+const raw: [number, number][] = [];
+for (let i = 0; i < points; i++) {
+  const nx = Math.sin(a * y) + c * Math.cos(a * x);
+  const ny = Math.sin(b * x) + d * Math.cos(b * y);
+  x = nx;
+  y = ny;
+  if (i > 40) raw.push([x, y]);
+}
+
+const W = 1000;
+const H = 700;
+const pad = 40;
+let minX = Infinity;
+let maxX = -Infinity;
+let minY = Infinity;
+let maxY = -Infinity;
+for (const [px, py] of raw) {
+  if (px < minX) minX = px;
+  if (px > maxX) maxX = px;
+  if (py < minY) minY = py;
+  if (py > maxY) maxY = py;
+}
+const span = Math.max(maxX - minX, maxY - minY) || 1;
+const sx = (W - pad * 2) / span;
+const sy = (H - pad * 2) / span;
+const ox = (W - (maxX - minX) * sx) / 2;
+const oy = (H - (maxY - minY) * sy) / 2;
+
+const dPath =
+  'M' +
+  raw
+    .map(([px, py]) => `${(ox + (px - minX) * sx).toFixed(1)},${(oy + (maxY - py) * sy).toFixed(1)}`)
+    .join(' L');
+
+const gid = `frac-${variant}-grad`;
+---
+
+<div class={`fractal fractal--${variant}`} aria-hidden="true">
+  <svg viewBox={`0 0 ${W} ${H}`} fill="none" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#6d8dff"></stop>
+        <stop offset="1" stop-color="#ff5fa2"></stop>
+      </linearGradient>
+    </defs>
+    <path d={dPath} stroke={`url(#${gid})`} stroke-width="1" stroke-opacity="0.85"></path>
+  </svg>
+</div>
