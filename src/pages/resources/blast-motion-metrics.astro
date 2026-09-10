@@ -51,6 +51,11 @@ const nSwings = swingData.meta.n_swings;
       </div>
 
       <div class="bp-timeline">
+        <div class="bp-scrub">
+          <span class="bp-scrub__cap">Swing</span>
+          <input type="range" id="bp-scrub" min="0" max="1" value="0" step="1" aria-label="Drag to scrub the swing" />
+          <span class="bp-scrub__cap bp-scrub__cap--r">Release snaps to a checkpoint</span>
+        </div>
         <div class="bp-track" id="bp-track"></div>
         <p class="bp-timeline__caption">
           Average swing · {nSwings} swings · barrel tip ≈ {swingData.bat_speed_mph} mph near contact ·
@@ -200,10 +205,10 @@ const nSwings = swingData.meta.n_swings;
 
     const STOPS = [
       { key: 'load', label: 'Load', t: -430, ids: [], blurb: 'Coil back into the rear hip. No Blast metric fires yet — load and stance are mostly style.' },
-      { key: 'early-connection', label: 'Downswing start', t: -330, ids: ['early-connection'], blurb: 'Early Connection is captured the moment the bat transitions from load into rotation.' },
-      { key: 'rotational-acceleration', label: 'Acceleration', t: -255, ids: ['rotational-acceleration'], win: [-390, -150], blurb: 'Rotational Acceleration covers the bat transitioning from load into rotation, until roughly the back elbow slots.' },
-      { key: 'peak-hand-speed', label: 'Through the zone', t: -130, ids: ['peak-hand-speed'], blurb: 'Peak Hand Speed is the fastest the handle moves — measured six inches off the knob.' },
-      { key: 'on-plane-efficiency', label: 'On plane', t: -70, ids: ['on-plane-efficiency'], win: [-170, -10], blurb: 'On-Plane Efficiency is the share of the swing the barrel spends on the plane set by the vertical bat angle at contact.' },
+      { key: 'early-connection', label: 'Downswing start', t: -300, ids: ['early-connection'], blurb: 'Early Connection is captured as the hands first move forward, setting up connection at impact.' },
+      { key: 'rotational-acceleration', label: 'Acceleration', t: -230, ids: ['rotational-acceleration'], win: [-390, -150], blurb: 'Rotational Acceleration covers the bat transitioning from load into rotation, until roughly the back elbow slots.' },
+      { key: 'peak-hand-speed', label: 'Peak hand speed', t: data.peak_hand_speed_ms, ids: ['peak-hand-speed'], blurb: 'Peak Hand Speed is the fastest the handle moves — six inches off the knob, and it lands late, in the zone.' },
+      { key: 'on-plane-efficiency', label: 'On plane', t: -18, ids: ['on-plane-efficiency'], win: [-75, 6], blurb: 'On-Plane Efficiency is the share of the swing the barrel spends on the plane set by the vertical bat angle at contact — it accrues through the zone.' },
       { key: 'contact', label: 'Contact', t: 0, ids: ['bat-speed', 'attack-angle', 'vertical-bat-angle', 'connection-at-impact'], blurb: 'At contact, Blast captures bat speed, attack angle, vertical bat angle, and connection at impact.' },
       { key: 'finish', label: 'Finish', t: 120, ids: [], blurb: 'Follow-through and deceleration.' },
     ];
@@ -227,6 +232,7 @@ const nSwings = swingData.meta.n_swings;
       blurb: document.getElementById('bp-blurb'),
       progress: document.getElementById('bp-progress-fill'),
       play: document.getElementById('bp-play'),
+      scrub: document.getElementById('bp-scrub'),
       track: document.getElementById('bp-track'),
       panel: document.getElementById('bp-panel'),
       panelBody: document.getElementById('bp-panel-body'),
@@ -362,6 +368,7 @@ const nSwings = swingData.meta.n_swings;
 
     const ZAXIS = new THREE.Vector3(0, 0, 1);
     let idx = idxForT(-330);
+    let pos = idx;
 
     function updateBat() {
       const o = V(O[idx]), d = V(D[idx]);
@@ -404,24 +411,37 @@ const nSwings = swingData.meta.n_swings;
     }
 
     function renderCallouts(stop) {
-      const CW = 200, CH = 52;
+      const CW = 200, CH = 52, GAP = 8;
       el.callouts.textContent = '';
       projected.length = 0;
+      const top = 58, bottom = ch - 100, left = 12, right = cw - CW - 12;
+      const items = [];
       for (const id of stop.ids) {
         const m = byId(id);
         const spec = ANCHOR[id];
         if (!m || !spec) continue;
         const s = project3(anchor3(spec.kind, stop));
-        let bx = Math.max(10, Math.min(cw - CW - 10, s.x + spec.dx));
-        let by = Math.max(10, Math.min(ch - CH - 10, s.y + spec.dy));
-        projected.push({ s, box: { x: bx + CW / 2, y: by + CH / 2 } });
+        items.push({
+          id, m, s,
+          bx: Math.max(left, Math.min(right, s.x + spec.dx)),
+          by: Math.max(top, Math.min(bottom - CH, s.y + spec.dy)),
+        });
+      }
+      items.sort((a, b) => a.by - b.by);
+      let prev = -Infinity;
+      for (const it of items) { it.by = Math.max(it.by, top, prev + CH + GAP); prev = it.by; }
+      let next = Infinity;
+      for (let i = items.length - 1; i >= 0; i--) { items[i].by = Math.min(items[i].by, bottom - CH, next - CH - GAP); next = items[i].by; }
+      for (const it of items) {
+        const by = Math.max(top, Math.min(bottom - CH, it.by));
+        projected.push({ s: it.s, box: { x: it.bx + CW / 2, y: by + CH / 2 } });
         const box = document.createElement('button');
         box.className = 'bp-callout';
         box.type = 'button';
-        box.dataset.metric = id;
-        box.style.left = bx + 'px';
+        box.dataset.metric = it.id;
+        box.style.left = it.bx + 'px';
         box.style.top = by + 'px';
-        box.innerHTML = `<span class="bp-callout__title">${m.key ? '★ ' : ''}${m.name}</span><span class="bp-callout__sub">${stop.label}${m.unit ? ' · ' + m.unit : ''}</span>`;
+        box.innerHTML = `<span class="bp-callout__title">${it.m.key ? '★ ' : ''}${it.m.name}</span><span class="bp-callout__sub">${stop.label}${it.m.unit ? ' · ' + it.m.unit : ''}</span>`;
         el.callouts.appendChild(box);
       }
     }
@@ -458,13 +478,14 @@ const nSwings = swingData.meta.n_swings;
       if (playing) {
         if (!holdUntil || ts >= holdUntil) {
           const goal = idxForT(STOPS[targetIdx].t);
-          const diff = goal - idx;
+          const diff = goal - pos;
           if (Math.abs(diff) <= 0.6) {
-            idx = goal;
+            pos = goal; idx = goal;
             if (targetIdx >= STOPS.length - 1) { stopPlay(); }
-            else { holdUntil = ts + 1000; targetIdx += 1; }
+            else { holdUntil = ts + 1300; targetIdx += 1; }
           } else {
-            idx = Math.round(idx + Math.sign(diff) * Math.min(Math.abs(diff), 1.1));
+            pos = pos + Math.sign(diff) * Math.min(Math.abs(diff), 0.5);
+            idx = Math.round(pos);
           }
         }
       }
@@ -475,16 +496,20 @@ const nSwings = swingData.meta.n_swings;
       const stop = STOPS[nearestStop()];
       el.stop.textContent = stop.label;
       el.blurb.textContent = stop.blurb;
-      el.progress.style.width = `${(idx / (D.length - 1)) * 100}%`;
+      el.progress.style.width = `${(pos / (D.length - 1)) * 100}%`;
+      if (!scrubbing) el.scrub.value = String(idx);
       renderCallouts(stop);
       drawOverlay();
     }
 
+    let scrubbing = false;
     function setT(t) {
-      idx = Math.max(0, Math.min(D.length - 1, idxForT(t)));
+      pos = Math.max(0, Math.min(D.length - 1, idxForT(t)));
       for (const s of STOPS) {
-        if (Math.abs(T[idx] - s.t) < 22) { idx = idxForT(s.t); break; }
+        if (Math.abs(T[Math.round(pos)] - s.t) < 22) { pos = idxForT(s.t); break; }
       }
+      idx = Math.round(pos);
+      el.scrub.value = String(idx);
     }
 
     // ---- controls ----
@@ -500,6 +525,17 @@ const nSwings = swingData.meta.n_swings;
     document.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowLeft') { stopPlay(); setT(T[idx] + 12); }
       if (e.key === 'ArrowRight') { stopPlay(); setT(T[idx] - 12); }
+    });
+
+    el.scrub.max = String(D.length - 1);
+    el.scrub.value = String(idx);
+    el.scrub.addEventListener('input', () => {
+      stopPlay(); scrubbing = true;
+      pos = Math.max(0, Math.min(D.length - 1, +el.scrub.value));
+      idx = Math.round(pos);
+    });
+    el.scrub.addEventListener('change', () => {
+      scrubbing = false; stopPlay(); setT(T[idx]);
     });
 
     STOPS.forEach((s) => {
