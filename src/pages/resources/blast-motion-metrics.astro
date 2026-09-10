@@ -185,6 +185,7 @@ const nSwings = swingData.meta.n_swings;
     const T = data.t_ms;
     const O = data.origin;
     const D = data.distal;
+    const S = data.sweet;
     const CI = data.contact_index;
     const GROUND = -data.contact_height_m;
     const PLANE = data.plane;
@@ -309,8 +310,8 @@ const nSwings = swingData.meta.n_swings;
     handsLine.computeLineDistances();
     scene.add(handsLine);
 
-    // barrel path (gradient tube)
-    const curve = new THREE.CatmullRomCurve3(D.map(V));
+    // barrel path (gradient tube) — traced through the sweet spot, 6" in from the tip
+    const curve = new THREE.CatmullRomCurve3(S.map(V));
     const tube = new THREE.TubeGeometry(curve, 260, 0.011, 10, false);
     {
       const cA = new THREE.Color(0x6d8dff);
@@ -336,7 +337,7 @@ const nSwings = swingData.meta.n_swings;
 
     // bat
     const batLen = V(D[CI]).distanceTo(V(O[CI]));
-    const batGeo = new THREE.CylinderGeometry(0.013, 0.026, batLen, 14, 1);
+    const batGeo = new THREE.CylinderGeometry(0.03, 0.012, batLen, 14, 1);
     batGeo.rotateX(Math.PI / 2);
     batGeo.translate(0, 0, batLen / 2);
     {
@@ -365,12 +366,11 @@ const nSwings = swingData.meta.n_swings;
     function updateBat() {
       const o = V(O[idx]), d = V(D[idx]);
       const dirv = d.clone().sub(o);
-      const len = dirv.length() || 1;
       const q = new THREE.Quaternion().setFromUnitVectors(ZAXIS, dirv.clone().normalize());
       bat.quaternion.copy(q);
       bat.position.copy(o);
       knob.position.copy(o);
-      sweet.position.copy(o).add(dirv.multiplyScalar(0.82));
+      sweet.position.copy(V(S[idx]));
     }
 
     // ---- sizing ----
@@ -395,13 +395,8 @@ const nSwings = swingData.meta.n_swings;
     function anchor3(kind, stop) {
       if (kind === 'hands') return O[idx];
       if (kind === 'knob') return [0, 1, 2].map((a) => O[idx][a] + 0.17 * (D[idx][a] - O[idx][a]));
-      if (kind === 'sweet') return [0, 1, 2].map((a) => O[idx][a] + 0.82 * (D[idx][a] - O[idx][a]));
-      if (kind === 'barrel') return D[idx];
-      if (kind === 'window') {
-        const mid = idxForT((stop.win[0] + stop.win[1]) / 2);
-        return D[mid];
-      }
-      return D[idx];
+      if (kind === 'window') return S[idxForT((stop.win[0] + stop.win[1]) / 2)];
+      return S[idx];
     }
     function project3(p) {
       const v = V(p).project(camera);
