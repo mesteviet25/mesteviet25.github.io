@@ -1,35 +1,12 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Fractal from '../../components/Fractal.astro';
-import { metrics, phases, sourceNote } from '../../data/blastMetrics';
+import { metrics, sourceNote } from '../../data/blastMetrics';
+import { planePath, zone, body, VIEW_W, VIEW_H } from '../../lib/swing';
 
-// --- Explorer geometry (illustrative teaching model, not a simulator) -------
-const P = { x: 320, y: 360 };
-const R_BAT = 330;
-const R_SWEET = 300;
-const TH_START = 140;
-const TH_END = -15;
-const DEFAULT_TH = 22;
-
-const rad = (d: number) => (d * Math.PI) / 180;
-const pt = (r: number, th: number) => ({ x: P.x + r * Math.cos(rad(th)), y: P.y - r * Math.sin(rad(th)) });
-const aaOf = (th: number) => Math.max(-8, Math.min(18, 8 + (15 - th) * 0.3));
-
-const tip = pt(R_BAT, DEFAULT_TH);
-const sweet = pt(R_SWEET, DEFAULT_TH);
-const aa = aaOf(DEFAULT_TH);
-const velEnd = { x: sweet.x + 60 * Math.cos(rad(aa)), y: sweet.y - 60 * Math.sin(rad(aa)) };
-
-const trail: string[] = [];
-for (let th = TH_START; th >= TH_END; th -= 4) {
-  const p = pt(R_SWEET, th);
-  trail.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`);
-}
-const trailPath = 'M' + trail.join(' L');
-
-const zone = { x: 560, y: 235, w: 95, h: 195 };
-const plate = { x: 596, y: 498, w: 66, h: 9 };
-const ball = pt(R_SWEET, DEFAULT_TH);
+const fullPlane = planePath(0, 360, 4);
+const zoneCx = zone.x + zone.w / 2;
+const zoneCy = zone.y + zone.h / 2;
 ---
 
 <Base
@@ -43,142 +20,90 @@ const ball = pt(R_SWEET, DEFAULT_TH);
       <h1 class="reveal" style="--i:1">Blast Motion metrics, from the ground up</h1>
       <p class="lede reveal" style="--i:2">
         A bat sensor does not tell you whether a swing is good. It tells you <em>where</em> the bat was
-        and <em>how fast</em> at a few specific instants. This is a map of those instants — what each
-        Blast metric measures, exactly when it is captured, the range that tends to work, and how the
-        metrics feed each other.
+        and <em>how fast</em> at a few specific instants. Below, the swing plane is the ellipse around
+        the body that Blast builds backward from the vertical bat angle at contact. Drag the bat
+        around it — it pauses at each metric and shows you where that number comes from.
       </p>
-      <div class="bp-legend reveal" style="--i:3">
-        <span><i class="bp-swatch bp-swatch--b"></i> Key metric</span>
-        <span><i class="bp-swatch bp-swatch--a"></i> Supporting metric</span>
-        <span>Ranges: HTKC doctrine</span>
-      </div>
     </header>
 
-    <section style="margin-top: clamp(1.8rem, 5vw, 2.6rem);">
-      <p style="max-width: 58ch; color: var(--muted); margin: 0;">
-        Drag the bat through the zone below. As it moves, the metrics that are captured at that
-        moment appear — click any of them to read what it measures, when it fires, and what to do
-        with it.
-      </p>
-    </section>
-
-    <!-- ================= Explorer ================= -->
-    <section class="bp-layout">
-      <div class="bp-stage-wrap">
+    <!-- ================= Full-page explorer ================= -->
+    <section class="bp-bleed bp-explorer" id="bp-explorer">
+      <div class="bp-frame" id="bp-frame">
         <div class="bp-toolbar">
+          <div class="bp-toolbar__group">
+            <button class="bp-btn" id="bp-prev" type="button" aria-label="Previous checkpoint">‹</button>
+            <button class="bp-btn bp-btn--play" id="bp-play" type="button">▶ Swing</button>
+            <button class="bp-btn" id="bp-next" type="button" aria-label="Next checkpoint">›</button>
+          </div>
           <span class="bp-toolbar__hint">Drag the bat · ← → to nudge</span>
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="bp-chip" id="bp-play" type="button">▶ Sweep</button>
-            <button class="bp-chip" id="bp-reset" type="button">Reset</button>
-          </div>
         </div>
 
-        <div class="bp-stage" id="bp-stage">
-          <svg id="bp-svg" viewBox="0 0 900 560" role="img" aria-label="Diagram of a bat sweeping through the strike zone">
-            <defs>
-              <linearGradient id="bp-bat-grad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0" stop-color="#6d8dff"></stop>
-                <stop offset="1" stop-color="#ff5fa2"></stop>
-              </linearGradient>
-              <marker id="bp-vel-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M0 0 L10 5 L0 10 z" fill="#ff5fa2"></path>
-              </marker>
-            </defs>
+        <svg
+          id="bp-svg"
+          class="bp-svg"
+          viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+          preserveAspectRatio="xMidYMid meet"
+          role="img"
+          aria-label="An ellipse representing the swing plane around a hitter's body, with a bat that can be dragged around it"
+        >
+          <defs>
+            <linearGradient id="bp-batgrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#6d8dff"></stop>
+              <stop offset="1" stop-color="#ff5fa2"></stop>
+            </linearGradient>
+            <marker id="bp-vel-arrow" viewBox="0 0 10 10" refX="7.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="#ff5fa2"></path>
+            </marker>
+          </defs>
 
-            <!-- ground + plate -->
-            <line x1="40" y1="505" x2="860" y2="505" stroke="currentColor" stroke-width="1.5" opacity="0.5"></line>
-            <rect x={plate.x} y={plate.y} width={plate.w} height={plate.h} fill="currentColor" opacity="0.35"></rect>
-            <text x={plate.x + plate.w / 2} y="528" text-anchor="middle" fill="currentColor" font-size="11" opacity="0.6" style="font-family: var(--mono)">plate</text>
+          <!-- ground shadow -->
+          <ellipse cx={body.x} cy={body.y + 212} rx="280" ry="44" fill="var(--accent-a)" opacity="0.05"></ellipse>
 
-            <!-- strike zone -->
-            <rect x={zone.x} y={zone.y} width={zone.w} height={zone.h} fill="none" stroke="#6d8dff" stroke-width="1.2" stroke-dasharray="5 5" opacity="0.8"></rect>
-            <text x={zone.x + zone.w / 2} y={zone.y - 10} text-anchor="middle" fill="#6d8dff" font-size="11" style="font-family: var(--mono)">strike zone</text>
+          <!-- swing plane -->
+          <path d={fullPlane} class="bp-plane" fill="none"></path>
 
-            <!-- hitter -->
-            <g fill="none" stroke="currentColor" stroke-linecap="round" opacity="0.4">
-              <circle cx="300" cy="220" r="19" stroke-width="3"></circle>
-              <path d="M300 239 C292 285 292 312 300 345" stroke-width="3"></path>
-              <path d="M300 345 L268 468" stroke-width="4"></path>
-              <path d="M300 345 L342 470" stroke-width="4"></path>
-              <path d="M304 262 L320 360" stroke-width="3"></path>
-            </g>
+          <!-- strike zone -->
+          <g transform={`rotate(${zone.rot} ${zoneCx} ${zoneCy})`}>
+            <rect
+              x={zone.x}
+              y={zone.y}
+              width={zone.w}
+              height={zone.h}
+              fill="var(--accent-a)"
+              fill-opacity="0.04"
+              stroke="#6d8dff"
+              stroke-dasharray="6 6"
+              stroke-width="1.4"></rect>
+          </g>
+          <text x={zoneCx} y={zone.y - 14} text-anchor="middle" class="bp-label">strike zone</text>
 
-            <!-- swing-path trail -->
-            <path id="bp-trail" d={trailPath} fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 5" opacity="0.35"></path>
+          <!-- hitter -->
+          <g class="bp-figure" fill="none" stroke="currentColor" stroke-linecap="round">
+            <circle cx={body.x} cy={body.y - 150} r="40" stroke-width="5"></circle>
+            <path d={`M${body.x} ${body.y - 105} C${body.x - 30} ${body.y - 40} ${body.x - 32} ${body.y + 8} ${body.x - 10} ${body.y + 64}`} stroke-width="6"></path>
+            <path d={`M${body.x - 10} ${body.y + 64} L${body.x - 78} ${body.y + 258}`} stroke-width="7"></path>
+            <path d={`M${body.x - 10} ${body.y + 64} L${body.x + 80} ${body.y + 264}`} stroke-width="7"></path>
+            <path d={`M${body.x - 16} ${body.y - 92} L${body.x - 46} ${body.y + 14}`} stroke-width="5"></path>
+          </g>
 
-            <!-- live swing-path (drawn from load to current) -->
-            <path id="bp-live" d="" fill="none" stroke="url(#bp-bat-grad)" stroke-width="2.4" stroke-linecap="round" opacity="0.9"></path>
+          <!-- dynamic scene -->
+          <g id="bp-scene"></g>
+        </svg>
 
-            <!-- horizontal guide through sweet spot -->
-            <line id="bp-hguide" x1="60" y1={sweet.y} x2={sweet.x} y2={sweet.y} stroke="currentColor" stroke-width="1" stroke-dasharray="3 4" opacity="0.3"></line>
-
-            <!-- velocity arrow (attack direction) -->
-            <line id="bp-vel" x1={sweet.x} y1={sweet.y} x2={velEnd.x} y2={velEnd.y} stroke="#ff5fa2" stroke-width="2" marker-end="url(#bp-vel-arrow)"></line>
-            <text id="bp-vel-label" x={velEnd.x + 6} y={velEnd.y - 4} fill="#ff5fa2" font-size="11" style="font-family: var(--mono)">attack angle</text>
-
-            <!-- bat -->
-            <line id="bp-bat" x1={P.x} y1={P.y} x2={tip.x} y2={tip.y} stroke="url(#bp-bat-grad)" stroke-width="7" stroke-linecap="round"></line>
-            <circle cx={P.x} cy={P.y} r="5" fill="currentColor" opacity="0.6"></circle>
-            <text x={P.x - 12} y={P.y + 22} text-anchor="end" fill="currentColor" font-size="11" opacity="0.6" style="font-family: var(--mono)">hands</text>
-
-            <!-- draggable handle at the sweet spot -->
-            <circle id="bp-handle" cx={sweet.x} cy={sweet.y} r="22" fill="transparent"></circle>
-            <circle id="bp-sweet-dot" cx={sweet.x} cy={sweet.y} r="6" fill="#ff5fa2"></circle>
-            <circle id="bp-sweet-ring" cx={sweet.x} cy={sweet.y} r="11" fill="none" stroke="#ff5fa2" stroke-width="1.5" opacity="0.7"></circle>
-
-            <!-- ball sits on top of everything, only during contact -->
-            <g id="bp-ball" opacity="0">
-              <circle cx={ball.x} cy={ball.y} r="12" fill="none" stroke="#ff5fa2" stroke-width="1" opacity="0.5"></circle>
-              <circle cx={ball.x} cy={ball.y} r="8" fill="#fbfbfd" stroke="#ff5fa2" stroke-width="2"></circle>
-            </g>
-          </svg>
-
-          <div class="bp-popup" id="bp-popup">
-            <span class="bp-popup__phase" id="bp-popup-phase">Contact</span>
-            <div id="bp-popup-chips"></div>
+        <div class="bp-hud">
+          <div class="bp-hud__text">
+            <span class="bp-hud__stop" id="bp-stop">Load</span>
+            <span class="bp-hud__blurb" id="bp-blurb"></span>
           </div>
+          <span class="bp-hud__cta" id="bp-cta">Click a box to read more</span>
         </div>
-
-        <dl class="bp-readout">
-          <div>
-            <dt>Phase</dt>
-            <dd id="bp-r-phase">Contact</dd>
-          </div>
-          <div>
-            <dt>Attack angle</dt>
-            <dd><span id="bp-r-aa">{aa.toFixed(0)}</span><small>°</small></dd>
-          </div>
-          <div>
-            <dt>Bat vs ground</dt>
-            <dd><span id="bp-r-vba">{DEFAULT_TH.toFixed(0)}</span><small>°</small></dd>
-          </div>
-          <div>
-            <dt>Contact depth</dt>
-            <dd id="bp-r-depth" style="font-size: 0.82rem;">Middle</dd>
-          </div>
-        </dl>
-
-        <div class="bp-timeline">
-          <div class="bp-track" id="bp-track">
-            {
-              phases.map((p) => (
-                <button class="bp-seg" type="button" data-phase={p.id}>
-                  {p.short}
-                  <span class={`bp-seg__dot${p.metricIds.length ? '' : ' bp-seg__dot--none'}`} />
-                </button>
-              ))
-            }
-          </div>
-        </div>
+        <div class="bp-progress"><span id="bp-progress-fill"></span></div>
       </div>
-
-      <!-- ================= Detail drawer ================= -->
-      <aside class="bp-drawer" id="bp-drawer" aria-live="polite"></aside>
     </section>
 
-    <p class="bp-source" style="margin-top: 1.4rem;">
+    <p class="bp-note-line">
       The explorer is a teaching drawing: the geometry is illustrative, not a physical simulation.
-      The target ranges and benchmarks below are the real ones.
+      The target ranges and benchmarks are the real ones.
     </p>
 
     <!-- ================= Relationship map ================= -->
@@ -218,7 +143,6 @@ const ball = pt(R_SWEET, DEFAULT_TH);
             );
           })}
 
-          <!-- edges -->
           <path class="bp-edge bp-edge--chain" d="M230 83 L355 83"></path>
           <path class="bp-edge bp-edge--chain" d="M545 83 L670 83"></path>
           <path class="bp-edge" d="M230 208 L355 268"></path>
@@ -290,163 +214,333 @@ const ball = pt(R_SWEET, DEFAULT_TH);
     <p class="bp-source">{sourceNote}</p>
   </article>
 
-  <script is:inline type="application/json" id="bp-metrics" set:html={JSON.stringify(metrics)}></script>
-  <script is:inline type="application/json" id="bp-phases" set:html={JSON.stringify(phases)}></script>
+  <!-- ================= Slide-over panel ================= -->
+  <div class="bp-scrim" id="bp-scrim" hidden></div>
+  <aside class="bp-panel" id="bp-panel" aria-hidden="true" aria-label="Metric detail">
+    <button class="bp-panel__close" id="bp-panel-close" type="button" aria-label="Close">×</button>
+    <div id="bp-panel-body"></div>
+  </aside>
 
   <script>
-    const METRICS = JSON.parse(document.getElementById('bp-metrics').textContent);
-    const PHASES = JSON.parse(document.getElementById('bp-phases').textContent);
-    const byId = (id) => METRICS.find((m) => m.id === id);
+    import { metrics } from '../../data/blastMetrics';
+    import {
+      STOPS,
+      PHI_LOAD,
+      PHI_FINISH,
+      CX,
+      CY,
+      A,
+      B,
+      TILT,
+      barrelPoint,
+      handsPoint,
+      pointAlongBat,
+      planePath,
+      batPolygon,
+      anchorPoint,
+      CALLOUT_LAYOUT,
+      CALLOUT_W,
+      CALLOUT_H,
+      VIEW_W,
+      VIEW_H,
+    } from '../../lib/swing';
 
-    const P = { x: 320, y: 360 };
-    const R_BAT = 330;
-    const R_SWEET = 300;
-    const TH_START = 140;
-    const TH_END = -15;
-    const DEFAULT_TH = 22;
+    const byId = (id) => metrics.find((m) => m.id === id);
+    const NS = 'http://www.w3.org/2000/svg';
 
-    const rad = (d) => (d * Math.PI) / 180;
-    const pt = (r, th) => ({ x: P.x + r * Math.cos(rad(th)), y: P.y - r * Math.sin(rad(th)) });
-    const aaOf = (th) => Math.max(-8, Math.min(18, 8 + (15 - th) * 0.3));
+    const svg = document.getElementById('bp-svg');
+    const scene = document.getElementById('bp-scene');
+    const stopEl = document.getElementById('bp-stop');
+    const blurbEl = document.getElementById('bp-blurb');
+    const progressFill = document.getElementById('bp-progress-fill');
+    const playBtn = document.getElementById('bp-play');
+    const panel = document.getElementById('bp-panel');
+    const panelBody = document.getElementById('bp-panel-body');
+    const scrim = document.getElementById('bp-scrim');
 
-    const phaseFor = (th) => {
-      if (th > 115) return 'load';
-      if (th > 95) return 'downswing-start';
-      if (th > 55) return 'acceleration';
-      if (th > 30) return 'mid-swing';
-      if (th > 5) return 'contact';
-      return 'finish';
+    let phi = STOPS[1].phi; // open on the first real metric checkpoint
+
+    function el(tag, attrs = {}) {
+      const n = document.createElementNS(NS, tag);
+      for (const k in attrs) n.setAttribute(k, attrs[k]);
+      return n;
+    }
+
+    function nearestStop(p) {
+      let best = 0;
+      let bd = Infinity;
+      STOPS.forEach((s, i) => {
+        const d = Math.abs(s.phi - p);
+        if (d < bd) {
+          bd = d;
+          best = i;
+        }
+      });
+      return best;
+    }
+
+    function makeCallout(metricId, stop, currentPhi) {
+      const m = byId(metricId);
+      const spec = CALLOUT_LAYOUT[metricId];
+      if (!m || !spec) return;
+      const anchor = anchorPoint(spec.anchor, currentPhi, stop.segment);
+      let bx = anchor.x + spec.dx;
+      let by = anchor.y + spec.dy;
+      bx = Math.max(18, Math.min(VIEW_W - CALLOUT_W - 18, bx));
+      by = Math.max(18, Math.min(VIEW_H - CALLOUT_H - 18, by));
+      const cx = bx + CALLOUT_W / 2;
+      const cy = by + CALLOUT_H / 2;
+
+      const g = el('g', { class: 'bp-callout', 'data-metric': metricId, tabindex: '0', role: 'button' });
+
+      // leader line + anchor dot
+      g.appendChild(el('line', { x1: anchor.x, y1: anchor.y, x2: cx, y2: cy, class: 'bp-leader-line' }));
+      g.appendChild(el('circle', { cx: anchor.x, cy: anchor.y, r: 4, class: 'bp-anchor-dot' }));
+
+      g.appendChild(el('rect', { x: bx, y: by, width: CALLOUT_W, height: CALLOUT_H, rx: 6, class: 'bp-callout-box' }));
+      g.appendChild(el('rect', { x: bx, y: by + 8, width: 3, height: CALLOUT_H - 16, rx: 1.5, class: 'bp-callout-bar' }));
+
+      const title = el('text', { x: bx + 16, y: by + 23, class: 'bp-callout-title' });
+      title.textContent = (m.key ? '★ ' : '') + m.name;
+      g.appendChild(title);
+
+      const sub = el('text', { x: bx + 16, y: by + 40, class: 'bp-callout-sub' });
+      sub.textContent = m.unit ? `${stop.label} · ${m.unit}` : stop.label;
+      g.appendChild(sub);
+
+      scene.appendChild(g);
+    }
+
+    function render(p) {
+      scene.textContent = '';
+      const stopIdx = nearestStop(p);
+      const stop = STOPS[stopIdx];
+
+      // on-plane / rotational-acceleration windows (faint, brightened when active)
+      STOPS.forEach((s) => {
+        if (!s.segment) return;
+        const active = s === stop;
+        scene.appendChild(
+          el('path', {
+            d: planePath(s.segment[0], s.segment[1], 3),
+            class: active ? 'bp-window bp-window--active' : 'bp-window',
+            fill: 'none',
+          })
+        );
+      });
+
+      // traveled arc
+      if (p > PHI_LOAD + 2) {
+        scene.appendChild(el('path', { d: planePath(PHI_LOAD, p, 3), class: 'bp-trail', fill: 'none' }));
+      }
+
+      // time-to-contact bracket across the downswing
+      if (stopIdx >= 1 && stopIdx <= 5) {
+        const b = el('path', {
+          d: ellipseArc(212, 318, 0.84),
+          class: 'bp-ttc',
+          fill: 'none',
+        });
+        scene.appendChild(b);
+        const mid = barrelPoint(265);
+        const t = el('text', { x: mid.x - 150, y: mid.y + 92, class: 'bp-ttc-label' });
+        t.textContent = 'Time to Contact';
+        scene.appendChild(t);
+      }
+
+      // bat
+      const bat = el('polygon', { points: batPolygon(p), class: 'bp-bat' });
+      scene.appendChild(bat);
+      const h = handsPoint(p);
+      scene.appendChild(el('circle', { cx: h.x, cy: h.y, r: 7, class: 'bp-knob' }));
+
+      // sweet spot
+      const sweet = pointAlongBat(p, 0.74);
+      scene.appendChild(el('circle', { cx: sweet.x, cy: sweet.y, r: 5.5, class: 'bp-sweet' }));
+
+      // velocity (attack-angle) arrow
+      const brl = barrelPoint(p);
+      const ang = 12 * (Math.PI / 180);
+      scene.appendChild(
+        el('line', {
+          x1: brl.x,
+          y1: brl.y,
+          x2: brl.x + 120 * Math.cos(ang),
+          y2: brl.y - 120 * Math.sin(ang),
+          class: 'bp-vel',
+          'marker-end': 'url(#bp-vel-arrow)',
+        })
+      );
+      const vlabel = el('text', { x: brl.x + 128, y: brl.y - 42, class: 'bp-vel-label' });
+      vlabel.textContent = 'attack angle';
+      scene.appendChild(vlabel);
+
+      // callouts
+      stop.metricIds.forEach((id) => makeCallout(id, stop, p));
+
+      // hud
+      stopEl.textContent = stop.label;
+      blurbEl.textContent = stop.blurb;
+      progressFill.style.width = `${(((p - PHI_LOAD) / (PHI_FINISH - PHI_LOAD)) * 100).toFixed(1)}%`;
+      document.querySelectorAll('.bp-node').forEach((n) => n.classList.remove('is-active'));
+    }
+
+    function ellipseArc(phi0, phi1, scale) {
+      const step = 3;
+      const dir = phi1 >= phi0 ? 1 : -1;
+      const pts = [];
+      for (let p = phi0; dir > 0 ? p <= phi1 : p >= phi1; p += dir * step) {
+        const t = p * (Math.PI / 180);
+        const rot = (x, y) => {
+          const c = Math.cos((TILT * Math.PI) / 180);
+          const s = Math.sin((TILT * Math.PI) / 180);
+          return { x: x * c - y * s, y: x * s + y * c };
+        };
+        const q = rot(A * scale * Math.cos(t), B * scale * Math.sin(t));
+        pts.push(`${(CX + q.x).toFixed(1)},${(CY - q.y).toFixed(1)}`);
+      }
+      return 'M' + pts.join(' L');
+    }
+
+    function setPhi(p, snap = true) {
+      phi = Math.max(PHI_LOAD, Math.min(PHI_FINISH, p));
+      if (snap) {
+        for (const s of STOPS) {
+          if (Math.abs(s.phi - phi) < 6) {
+            phi = s.phi;
+            break;
+          }
+        }
+      }
+      render(phi);
+    }
+
+    // ---- drag ----
+    function pointerToPhi(evt) {
+      const ctm = svg.getScreenCTM().inverse();
+      const scr = new DOMPoint(evt.clientX, evt.clientY).matrixTransform(ctm);
+      const dx = scr.x - CX;
+      const dy = -(scr.y - CY);
+      const c = Math.cos((-TILT * Math.PI) / 180);
+      const s = Math.sin((-TILT * Math.PI) / 180);
+      const x = dx * c - dy * s;
+      const y = dx * s + dy * c;
+      let p = (Math.atan2(y / B, x / A) * 180) / Math.PI;
+      while (p < PHI_LOAD - 70) p += 360;
+      while (p > PHI_FINISH + 70) p -= 360;
+      return p;
+    }
+
+    let dragging = false;
+    svg.style.cursor = 'grab';
+    svg.addEventListener('pointerdown', (e) => {
+      // let callout boxes be clicked without starting a drag
+      if (e.target.closest && e.target.closest('.bp-callout')) return;
+      dragging = true;
+      stopPlay();
+      svg.setPointerCapture(e.pointerId);
+      svg.style.cursor = 'grabbing';
+      setPhi(pointerToPhi(e));
+    });
+    svg.addEventListener('pointermove', (e) => {
+      if (dragging) setPhi(pointerToPhi(e));
+    });
+    const endDrag = (e) => {
+      if (!dragging) return;
+      dragging = false;
+      svg.style.cursor = 'grab';
+      try {
+        svg.releasePointerCapture(e.pointerId);
+      } catch (err) {
+        /* already released */
+      }
     };
+    svg.addEventListener('pointerup', endDrag);
+    svg.addEventListener('pointercancel', endDrag);
 
-    const el = {
-      stage: document.getElementById('bp-stage'),
-      svg: document.getElementById('bp-svg'),
-      bat: document.getElementById('bp-bat'),
-      sweetDot: document.getElementById('bp-sweet-dot'),
-      sweetRing: document.getElementById('bp-sweet-ring'),
-      handle: document.getElementById('bp-handle'),
-      live: document.getElementById('bp-live'),
-      hguide: document.getElementById('bp-hguide'),
-      ball: document.getElementById('bp-ball'),
-      vel: document.getElementById('bp-vel'),
-      velLabel: document.getElementById('bp-vel-label'),
-      popup: document.getElementById('bp-popup'),
-      popupPhase: document.getElementById('bp-popup-phase'),
-      popupChips: document.getElementById('bp-popup-chips'),
-      rPhase: document.getElementById('bp-r-phase'),
-      rAa: document.getElementById('bp-r-aa'),
-      rVba: document.getElementById('bp-r-vba'),
-      rDepth: document.getElementById('bp-r-depth'),
-      track: document.getElementById('bp-track'),
-      drawer: document.getElementById('bp-drawer'),
-      play: document.getElementById('bp-play'),
-      reset: document.getElementById('bp-reset'),
-    };
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') {
+        stopPlay();
+        setPhi(phi + 4);
+      }
+      if (e.key === 'ArrowRight') {
+        stopPlay();
+        setPhi(phi - 4);
+      }
+    });
 
-    let theta = DEFAULT_TH;
-    let selected = 'bat-speed';
+    // ---- autoplay ----
     let playing = false;
     let raf = null;
+    let targetIdx = 0;
+    let holdUntil = 0;
 
-    const phaseLabel = (id) => PHASES.find((p) => p.id === id).label;
-
-    function depthWord(x) {
-      // plate front edge at 596; further right = more out front
-      const d = x - 596;
-      if (d > 24) return 'Out front';
-      if (d > -12) return 'Middle';
-      return 'Deep';
+    function stopPlay() {
+      playing = false;
+      if (raf) cancelAnimationFrame(raf);
+      raf = null;
+      playBtn.textContent = '▶ Swing';
     }
 
-    function setTheta(th) {
-      theta = Math.max(TH_END, Math.min(TH_START, th));
-      const p = pt(R_SWEET, theta);
-      const t = pt(R_BAT, theta);
-      const a = aaOf(theta);
-      const v = { x: p.x + 60 * Math.cos(rad(a)), y: p.y - 60 * Math.sin(rad(a)) };
-
-      el.bat.setAttribute('x2', t.x);
-      el.bat.setAttribute('y2', t.y);
-      el.sweetDot.setAttribute('cx', p.x);
-      el.sweetDot.setAttribute('cy', p.y);
-      el.sweetRing.setAttribute('cx', p.x);
-      el.sweetRing.setAttribute('cy', p.y);
-      el.handle.setAttribute('cx', p.x);
-      el.handle.setAttribute('cy', p.y);
-      el.hguide.setAttribute('y1', p.y);
-      el.hguide.setAttribute('y2', p.y);
-      el.hguide.setAttribute('x2', p.x);
-      el.ball.querySelectorAll('circle').forEach((c) => {
-        c.setAttribute('cx', p.x);
-        c.setAttribute('cy', p.y);
-      });
-      el.vel.setAttribute('x1', p.x);
-      el.vel.setAttribute('y1', p.y);
-      el.vel.setAttribute('x2', v.x);
-      el.vel.setAttribute('y2', v.y);
-      el.velLabel.setAttribute('x', v.x + 6);
-      el.velLabel.setAttribute('y', v.y - 4);
-
-      // live traveled arc, from load to current
-      const livePts = [];
-      for (let s = TH_START; s >= theta; s -= 4) {
-        const q = pt(R_SWEET, s);
-        livePts.push(`${q.x.toFixed(1)},${q.y.toFixed(1)}`);
+    function tick(ts) {
+      if (!playing) return;
+      if (holdUntil && ts < holdUntil) {
+        raf = requestAnimationFrame(tick);
+        return;
       }
-      const last = pt(R_SWEET, theta);
-      livePts.push(`${last.x.toFixed(1)},${last.y.toFixed(1)}`);
-      el.live.setAttribute('d', livePts.length > 1 ? 'M' + livePts.join(' L') : '');
-
-      const phase = phaseFor(theta);
-      el.rPhase.textContent = phaseLabel(phase);
-      el.rAa.textContent = a.toFixed(0);
-      el.rVba.textContent = Math.abs(theta).toFixed(0);
-      el.rDepth.textContent = depthWord(p.x);
-
-      const showBall = phase === 'contact';
-      el.ball.setAttribute('opacity', showBall ? '1' : '0');
-      el.vel.setAttribute('opacity', phase === 'finish' ? '0.35' : '1');
-      el.velLabel.setAttribute('opacity', phase === 'finish' ? '0' : '1');
-
-      // popup
-      el.popupPhase.textContent = phaseLabel(phase);
-      const ids = PHASES.find((x) => x.id === phase).metricIds;
-      el.popupChips.innerHTML = ids.length
-        ? ids
-            .map((id) => {
-              const m = byId(id);
-              const star = m.key ? ' bp-chip--key' : '';
-              const active = id === selected ? ' is-active' : '';
-              return `<button class="bp-chip${star}${active}" data-metric="${id}" type="button">${m.name}${m.unit ? ' · ' + m.unit : ''}</button>`;
-            })
-            .join('')
-        : '<span style="font-family: var(--mono); font-size: 0.6rem; color: var(--muted); padding: 0.3rem;">No Blast metric fires here.</span>';
-
-      const leftPct = Math.max(14, Math.min(86, (p.x / 900) * 100));
-      const topPct = Math.max(42, Math.min(92, (p.y / 560) * 100));
-      el.popup.style.left = leftPct + '%';
-      el.popup.style.top = topPct + '%';
-      // flip below the bat when the sweet spot rides high, so the box never clips
-      const below = p.y / 560 < 0.5;
-      el.popup.style.transform = below ? 'translate(-50%, 16%)' : 'translate(-50%, -114%)';
-      el.popup.classList.toggle('is-below', below);
-
-      // timeline active
-      [...el.track.children].forEach((b) => {
-        b.classList.toggle('is-active', b.getAttribute('data-phase') === phase);
-      });
+      const goal = STOPS[targetIdx].phi;
+      const diff = goal - phi;
+      if (Math.abs(diff) <= 1.5) {
+        setPhi(goal);
+        if (targetIdx >= STOPS.length - 1) {
+          stopPlay();
+          return;
+        }
+        holdUntil = ts + 1050;
+        targetIdx += 1;
+      } else {
+        setPhi(phi + Math.sign(diff) * Math.min(Math.abs(diff), 2.4));
+      }
+      raf = requestAnimationFrame(tick);
     }
 
-    function renderDrawer(id) {
+    playBtn.addEventListener('click', () => {
+      if (playing) {
+        stopPlay();
+        return;
+      }
+      playing = true;
+      holdUntil = 0;
+      playBtn.textContent = '❚❚ Pause';
+      let idx = STOPS.findIndex((s) => s.phi > phi + 2);
+      if (idx < 0) {
+        setPhi(STOPS[0].phi);
+        idx = 1;
+      }
+      targetIdx = idx;
+      raf = requestAnimationFrame(tick);
+    });
+
+    document.getElementById('bp-prev').addEventListener('click', () => {
+      stopPlay();
+      const idx = nearestStop(phi) - 1;
+      setPhi(STOPS[Math.max(0, idx)].phi);
+    });
+    document.getElementById('bp-next').addEventListener('click', () => {
+      stopPlay();
+      const idx = nearestStop(phi) + 1;
+      setPhi(STOPS[Math.min(STOPS.length - 1, idx)].phi);
+    });
+
+    // ---- slide-over panel ----
+    function renderPanel(id) {
       const m = byId(id);
       if (!m) return;
       const levels = m.levels
         ? `<dt>Levels</dt><dd>${m.levels.map((l) => `${l.label}: ${l.value}`).join('<br>')}</dd>`
         : '';
       const flags = m.flags.length
-        ? `<dt>Watch for</dt><dd><ul style="margin:0; padding-left: 1rem;">${m.flags
-            .map((f) => `<li>${f}</li>`)
-            .join('')}</ul></dd>`
+        ? `<dt>Watch for</dt><dd><ul>${m.flags.map((f) => `<li>${f}</li>`).join('')}</ul></dd>`
         : '';
       const related = m.related.length
         ? `<ul class="bp-related">${m.related
@@ -454,7 +548,7 @@ const ball = pt(R_SWEET, DEFAULT_TH);
             .join('')}</ul>`
         : '';
 
-      el.drawer.innerHTML = `
+      panelBody.innerHTML = `
         <p class="bp-drawer__phase">${m.key ? '★ Key metric' : 'Supporting metric'}</p>
         <h3>${m.name}${m.unit ? ` <span style="color: var(--muted); font-weight: 400; font-size: 1rem;">${m.unit}</span>` : ''}</h3>
         <dl class="bp-spec">
@@ -471,122 +565,59 @@ const ball = pt(R_SWEET, DEFAULT_TH);
       `;
     }
 
-    function selectMetric(id) {
-      selected = id;
-      renderDrawer(id);
-      el.popupChips.querySelectorAll('[data-metric]').forEach((b) => {
-        b.classList.toggle('is-active', b.getAttribute('data-metric') === id);
-      });
-      document.querySelectorAll('.bp-map .bp-node').forEach((n) => {
-        n.classList.toggle('is-active', n.getAttribute('data-metric') === id);
-      });
-      if (window.matchMedia('(max-width: 60rem)').matches) {
-        el.drawer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+    function openPanel(id) {
+      renderPanel(id);
+      panel.classList.add('is-open');
+      panel.setAttribute('aria-hidden', 'false');
+      scrim.hidden = false;
+      requestAnimationFrame(() => scrim.classList.add('is-on'));
+    }
+    function closePanel() {
+      panel.classList.remove('is-open');
+      panel.setAttribute('aria-hidden', 'true');
+      scrim.classList.remove('is-on');
+      setTimeout(() => {
+        scrim.hidden = true;
+      }, 220);
     }
 
-    // ---- drag: anywhere on the diagram moves the bat ----
-    let dragging = false;
-    function svgAngle(evt) {
-      const ctm = el.svg.getScreenCTM().inverse();
-      const p = new DOMPoint(evt.clientX, evt.clientY).matrixTransform(ctm);
-      return (Math.atan2(P.y - p.y, p.x - P.x) * 180) / Math.PI;
-    }
-    el.svg.style.cursor = 'grab';
-    el.svg.addEventListener('pointerdown', (e) => {
-      dragging = true;
-      stopPlay();
-      el.svg.setPointerCapture(e.pointerId);
-      el.svg.style.cursor = 'grabbing';
-      setTheta(svgAngle(e));
-    });
-    el.svg.addEventListener('pointermove', (e) => {
-      if (dragging) setTheta(svgAngle(e));
-    });
-    const endDrag = (e) => {
-      if (!dragging) return;
-      dragging = false;
-      el.svg.style.cursor = 'grab';
-      try {
-        el.svg.releasePointerCapture(e.pointerId);
-      } catch (err) {
-        /* pointer already released */
-      }
-    };
-    el.svg.addEventListener('pointerup', endDrag);
-    el.svg.addEventListener('pointercancel', endDrag);
-
-    // keyboard nudge
+    document.getElementById('bp-panel-close').addEventListener('click', closePanel);
+    scrim.addEventListener('click', closePanel);
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') setTheta(theta + 3);
-      if (e.key === 'ArrowRight') setTheta(theta - 3);
+      if (e.key === 'Escape') closePanel();
     });
 
-    // ---- play ----
-    function stopPlay() {
-      playing = false;
-      if (raf) cancelAnimationFrame(raf);
-      raf = null;
-      el.play.textContent = '▶ Sweep';
-    }
-    function tick() {
-      let th = theta - 1.6;
-      if (th <= TH_END) {
-        setTheta(TH_END);
-        stopPlay();
-        return;
-      }
-      setTheta(th);
-      raf = requestAnimationFrame(tick);
-    }
-    el.play.addEventListener('click', () => {
-      if (playing) {
-        stopPlay();
-        return;
-      }
-      playing = true;
-      el.play.textContent = '❚❚ Pause';
-      setTheta(TH_START);
-      raf = requestAnimationFrame(tick);
-    });
-    el.reset.addEventListener('click', () => {
-      stopPlay();
-      setTheta(DEFAULT_TH);
-      selectMetric('bat-speed');
-    });
-
-    // ---- timeline ----
-    el.track.addEventListener('click', (e) => {
-      const b = e.target.closest('[data-phase]');
-      if (!b) return;
-      stopPlay();
-      const mid = {
-        load: 128,
-        'downswing-start': 105,
-        acceleration: 75,
-        'mid-swing': 42,
-        contact: 17,
-        finish: -5,
-      };
-      setTheta(mid[b.getAttribute('data-phase')]);
-    });
-
-    // ---- chips + map nodes (delegated) ----
     document.addEventListener('click', (e) => {
       const t = e.target.closest('[data-metric]');
-      if (t) selectMetric(t.getAttribute('data-metric'));
+      if (t) {
+        // don't open from inside the already-open panel's related list unless it's a related chip
+        openPanel(t.getAttribute('data-metric'));
+        document.querySelectorAll('.bp-node').forEach((n) => {
+          n.classList.toggle('is-active', n.getAttribute('data-metric') === t.getAttribute('data-metric'));
+        });
+      }
     });
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
       const n = document.activeElement;
-      if (n && n.classList && n.classList.contains('bp-node')) {
+      if (n && n.classList && (n.classList.contains('bp-callout') || n.classList.contains('bp-node'))) {
         e.preventDefault();
-        selectMetric(n.getAttribute('data-metric'));
+        openPanel(n.getAttribute('data-metric'));
       }
     });
 
-    // init
-    setTheta(DEFAULT_TH);
-    selectMetric(selected);
+    // ---- init ----
+    const startPhi = (() => {
+      const q = new URLSearchParams(location.search).get('checkpoint');
+      if (!q) return STOPS[1].phi;
+      if (q === 'bat-speed' || q === 'attack-angle' || q === 'vertical-bat-angle' || q === 'connection-at-impact') return 318;
+      const s = STOPS.find((x) => x.key === q);
+      return s ? s.phi : STOPS[1].phi;
+    })();
+    setPhi(startPhi, false);
+    render(phi);
+
+    const openId = new URLSearchParams(location.search).get('open');
+    if (openId && byId(openId)) openPanel(openId);
   </script>
 </Base>
