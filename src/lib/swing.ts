@@ -33,15 +33,15 @@ function rot(x: number, y: number, deg: number): Pt {
 // ---- swing arc control points (barrel / sweet spot) -----------------------
 
 const BARREL_CTRL: Pt[] = [
-  { x: 455, y: 190 }, // load — high behind the head
-  { x: 505, y: 290 }, // downswing start
-  { x: 595, y: 390 }, // acceleration
-  { x: 720, y: 455 }, // late downswing — flattening
-  { x: 860, y: 480 }, // through the zone
-  { x: 1010, y: 468 }, // contact
-  { x: 1140, y: 400 }, // extension
-  { x: 1190, y: 290 }, // follow-through
-  { x: 1155, y: 180 }, // finish
+  { x: 452, y: 150 }, // load — high behind the head
+  { x: 535, y: 225 }, // downswing start — barrel still above the hands (positive VBA)
+  { x: 645, y: 320 }, // acceleration — still above the hands
+  { x: 765, y: 415 }, // late downswing — beginning to flatten
+  { x: 885, y: 468 }, // through the zone
+  { x: 1015, y: 462 }, // contact
+  { x: 1140, y: 395 }, // extension
+  { x: 1192, y: 285 }, // follow-through
+  { x: 1155, y: 175 }, // finish
 ];
 
 const HANDS_CTRL: Pt[] = [
