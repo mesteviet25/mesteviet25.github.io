@@ -2,16 +2,14 @@
 import Base from '../../layouts/Base.astro';
 import Fractal from '../../components/Fractal.astro';
 import { metrics, sourceNote } from '../../data/blastMetrics';
-import { guidePath, zone, body, VIEW_W, VIEW_H } from '../../lib/swing';
+import swingData from '../../data/averageSwing.json';
 
-const fullPlane = guidePath();
-const zoneCx = zone.x + zone.w / 2;
-const zoneCy = zone.y + zone.h / 2;
+const nSwings = swingData.meta.n_swings;
 ---
 
 <Base
   title="Blast Motion Metrics Primer — Stevie Thomas"
-  description="An interactive primer on every Blast Motion metric: what it measures, when in the swing it is captured, its target range, and how the metrics feed each other."
+  description="An interactive 3D primer on every Blast Motion metric, built from the average swing in Driveline's biomechanics lab: what each metric measures, when it is captured, and how they feed each other."
 >
   <article>
     <header class="bp-hero hero-wrap">
@@ -20,13 +18,13 @@ const zoneCy = zone.y + zone.h / 2;
       <h1 class="reveal" style="--i:1">Blast Motion metrics, from the ground up</h1>
       <p class="lede reveal" style="--i:2">
         A bat sensor does not tell you whether a swing is good. It tells you <em>where</em> the bat was
-        and <em>how fast</em> at a few specific instants. Below, the barrel traces a real swing arc
-        through the plane Blast builds from the vertical bat angle at contact. Drag the bat along it —
-        it pauses at each metric and shows you where that number comes from.
+        and <em>how fast</em> at a few specific instants. The bat below is the <strong>average swing</strong>
+        from Driveline's biomechanics lab — {nSwings} clean right-handed swings, real bat motion through
+        space. Drag to orbit it; scrub the swing and it pauses at each metric.
       </p>
     </header>
 
-    <!-- ================= Full-page explorer ================= -->
+    <!-- ================= Full-page 3D explorer ================= -->
     <section class="bp-bleed bp-explorer" id="bp-explorer">
       <div class="bp-frame" id="bp-frame">
         <div class="bp-toolbar">
@@ -35,76 +33,31 @@ const zoneCy = zone.y + zone.h / 2;
             <button class="bp-btn bp-btn--play" id="bp-play" type="button">▶ Swing</button>
             <button class="bp-btn" id="bp-next" type="button" aria-label="Next checkpoint">›</button>
           </div>
-          <span class="bp-toolbar__hint">Drag the bat · ← → to nudge</span>
+          <span class="bp-toolbar__hint">Drag to orbit · scroll to zoom</span>
         </div>
 
-        <svg
-          id="bp-svg"
-          class="bp-svg"
-          viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-          preserveAspectRatio="xMidYMid meet"
-          role="img"
-          aria-label="A bat tracing a swing arc through the strike zone, with metrics that can be dragged through the swing"
-        >
-          <defs>
-            <linearGradient id="bp-batgrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#6d8dff"></stop>
-              <stop offset="1" stop-color="#ff5fa2"></stop>
-            </linearGradient>
-            <marker id="bp-vel-arrow" viewBox="0 0 10 10" refX="7.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M0 0 L10 5 L0 10 z" fill="#ff5fa2"></path>
-            </marker>
-          </defs>
-
-          <!-- ground shadow -->
-          <ellipse cx={body.x} cy={body.y + 212} rx="280" ry="44" fill="var(--accent-a)" opacity="0.05"></ellipse>
-
-          <!-- swing plane (faint guide) -->
-          <path d={fullPlane} class="bp-plane" fill="none"></path>
-
-          <!-- strike zone -->
-          <g transform={`rotate(${zone.rot} ${zoneCx} ${zoneCy})`}>
-            <rect
-              x={zone.x}
-              y={zone.y}
-              width={zone.w}
-              height={zone.h}
-              fill="var(--accent-a)"
-              fill-opacity="0.04"
-              stroke="#6d8dff"
-              stroke-dasharray="6 6"
-              stroke-width="1.4"></rect>
-          </g>
-          <text x={zoneCx} y={zone.y - 14} text-anchor="middle" class="bp-label">strike zone</text>
-
-          <!-- hitter -->
-          <g class="bp-figure" fill="none" stroke="currentColor" stroke-linecap="round">
-            <circle cx={body.x} cy={body.y - 150} r="40" stroke-width="5"></circle>
-            <path d={`M${body.x} ${body.y - 105} C${body.x - 30} ${body.y - 40} ${body.x - 32} ${body.y + 8} ${body.x - 10} ${body.y + 64}`} stroke-width="6"></path>
-            <path d={`M${body.x - 10} ${body.y + 64} L${body.x - 78} ${body.y + 258}`} stroke-width="7"></path>
-            <path d={`M${body.x - 10} ${body.y + 64} L${body.x + 80} ${body.y + 264}`} stroke-width="7"></path>
-            <path d={`M${body.x - 16} ${body.y - 92} L${body.x - 46} ${body.y + 14}`} stroke-width="5"></path>
-          </g>
-
-          <!-- dynamic scene -->
-          <g id="bp-scene"></g>
-        </svg>
+        <canvas id="bp-canvas" class="bp-canvas" aria-label="3D rendering of the average lab swing"></canvas>
+        <canvas id="bp-overlay" class="bp-overlay"></canvas>
+        <div class="bp-callouts" id="bp-callouts"></div>
 
         <div class="bp-hud">
           <div class="bp-hud__text">
-            <span class="bp-hud__stop" id="bp-stop">Load</span>
+            <span class="bp-hud__stop" id="bp-stop">Downswing start</span>
             <span class="bp-hud__blurb" id="bp-blurb"></span>
           </div>
           <span class="bp-hud__cta" id="bp-cta">Click a box to read more</span>
         </div>
         <div class="bp-progress"><span id="bp-progress-fill"></span></div>
       </div>
-    </section>
 
-    <p class="bp-note-line">
-      The explorer is a teaching drawing: the geometry is illustrative, not a physical simulation.
-      The target ranges and benchmarks are the real ones.
-    </p>
+      <div class="bp-timeline">
+        <div class="bp-track" id="bp-track"></div>
+        <p class="bp-timeline__caption">
+          Average swing · {nSwings} swings · barrel tip ≈ {swingData.bat_speed_mph} mph near contact ·
+          contact at the strike zone. Bat motion is real; the zone is illustrative.
+        </p>
+      </div>
+    </section>
 
     <!-- ================= Relationship map ================= -->
     <section style="margin-top: clamp(3rem, 8vw, 4.5rem);">
@@ -222,294 +175,358 @@ const zoneCy = zone.y + zone.h / 2;
   </aside>
 
   <script>
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
     import { metrics } from '../../data/blastMetrics';
-    import {
-      STOPS,
-      CONTACT_U,
-      barrelAt,
-      handsAt,
-      pointAlongBat,
-      barrelSlice,
-      offsetSlice,
-      batPolygon,
-      anchorPoint,
-      nearestU,
-      CALLOUT_LAYOUT,
-      CALLOUT_W,
-      CALLOUT_H,
-      VIEW_W,
-      VIEW_H,
-    } from '../../lib/swing';
+    import data from '../../data/averageSwing.json';
 
     const byId = (id) => metrics.find((m) => m.id === id);
-    const NS = 'http://www.w3.org/2000/svg';
 
-    const svg = document.getElementById('bp-svg');
-    const scene = document.getElementById('bp-scene');
-    const stopEl = document.getElementById('bp-stop');
-    const blurbEl = document.getElementById('bp-blurb');
-    const progressFill = document.getElementById('bp-progress-fill');
-    const playBtn = document.getElementById('bp-play');
-    const panel = document.getElementById('bp-panel');
-    const panelBody = document.getElementById('bp-panel-body');
-    const scrim = document.getElementById('bp-scrim');
+    const T = data.t_ms;
+    const O = data.origin;
+    const D = data.distal;
+    const CI = data.contact_index;
+    const GROUND = -data.contact_height_m;
+    const PLANE = data.plane;
 
-    let u = STOPS[1].u;
+    const V = (p) => new THREE.Vector3(p[0], p[1], p[2]);
 
-    function el(tag, attrs = {}) {
-      const n = document.createElementNS(NS, tag);
-      for (const k in attrs) n.setAttribute(k, attrs[k]);
-      return n;
+    const idxForT = (t) => {
+      let best = 0, bd = Infinity;
+      T.forEach((v, i) => { const d = Math.abs(v - t); if (d < bd) { bd = d; best = i; } });
+      return best;
+    };
+
+    const STOPS = [
+      { key: 'load', label: 'Load', t: -430, ids: [], blurb: 'Coil back into the rear hip. No Blast metric fires yet — load and stance are mostly style.' },
+      { key: 'early-connection', label: 'Downswing start', t: -330, ids: ['early-connection'], blurb: 'Early Connection is captured the moment the bat transitions from load into rotation.' },
+      { key: 'rotational-acceleration', label: 'Acceleration', t: -255, ids: ['rotational-acceleration'], win: [-390, -150], blurb: 'Rotational Acceleration covers the bat transitioning from load into rotation, until roughly the back elbow slots.' },
+      { key: 'peak-hand-speed', label: 'Through the zone', t: -130, ids: ['peak-hand-speed'], blurb: 'Peak Hand Speed is the fastest the handle moves — measured six inches off the knob.' },
+      { key: 'on-plane-efficiency', label: 'On plane', t: -70, ids: ['on-plane-efficiency'], win: [-170, -10], blurb: 'On-Plane Efficiency is the share of the swing the barrel spends on the plane set by the vertical bat angle at contact.' },
+      { key: 'contact', label: 'Contact', t: 0, ids: ['bat-speed', 'attack-angle', 'vertical-bat-angle', 'connection-at-impact'], blurb: 'At contact, Blast captures bat speed, attack angle, vertical bat angle, and connection at impact.' },
+      { key: 'finish', label: 'Finish', t: 120, ids: [], blurb: 'Follow-through and deceleration.' },
+    ];
+
+    const ANCHOR = {
+      'early-connection': { kind: 'hands', dx: -300, dy: -150 },
+      'rotational-acceleration': { kind: 'window', dx: -240, dy: -170 },
+      'peak-hand-speed': { kind: 'knob', dx: -300, dy: 120 },
+      'on-plane-efficiency': { kind: 'window', dx: 170, dy: 170 },
+      'bat-speed': { kind: 'sweet', dx: 210, dy: -150 },
+      'attack-angle': { kind: 'barrel', dx: 280, dy: -40 },
+      'vertical-bat-angle': { kind: 'barrel', dx: 280, dy: 90 },
+      'connection-at-impact': { kind: 'hands', dx: -40, dy: 210 },
+    };
+
+    const el = {
+      canvas: document.getElementById('bp-canvas'),
+      overlay: document.getElementById('bp-overlay'),
+      callouts: document.getElementById('bp-callouts'),
+      stop: document.getElementById('bp-stop'),
+      blurb: document.getElementById('bp-blurb'),
+      progress: document.getElementById('bp-progress-fill'),
+      play: document.getElementById('bp-play'),
+      track: document.getElementById('bp-track'),
+      panel: document.getElementById('bp-panel'),
+      panelBody: document.getElementById('bp-panel-body'),
+      scrim: document.getElementById('bp-scrim'),
+    };
+    const octx = el.overlay.getContext('2d');
+
+    // ---- scene ----
+    const renderer = new THREE.WebGLRenderer({ canvas: el.canvas, antialias: true, alpha: true });
+    renderer.setClearColor(0x000000, 0);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(40, 1, 0.01, 100);
+    camera.up.set(0, 0, 1);
+
+    const centroid = (arr) => [0, 1, 2].map((a) => arr.reduce((s, p) => s + p[a], 0) / arr.length);
+    const allPts = [...D, ...O];
+    const target = centroid(allPts);
+    let RAD = 0;
+    for (const p of allPts) RAD = Math.max(RAD, V(p).distanceTo(V(target)));
+    const camDist = (RAD / Math.tan((camera.fov * Math.PI) / 360)) * 1.05;
+    const controls = new OrbitControls(camera, el.canvas);
+    controls.target.copy(V(target));
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.minDistance = RAD * 0.8;
+    controls.maxDistance = RAD * 7;
+    controls.enablePan = false;
+    camera.position.copy(V(target).add(new THREE.Vector3(-0.85, -1.0, 0.62).normalize().multiplyScalar(camDist)));
+
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x1a1f33, 1.15));
+    const dir = new THREE.DirectionalLight(0xffffff, 1.1);
+    dir.position.set(-1.4, -1.8, 2.2);
+    scene.add(dir);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+
+    // ground grid
+    const grid = new THREE.GridHelper(3, 15, 0x3a4260, 0x262c40);
+    grid.rotation.x = Math.PI / 2;
+    grid.position.set(target[0], target[1], GROUND);
+    grid.material.transparent = true;
+    grid.material.opacity = 0.55;
+    scene.add(grid);
+
+    // strike zone (illustrative box near contact)
+    const zoneGeo = new THREE.BoxGeometry(0.26, 0.44, 0.6);
+    const zone = new THREE.LineSegments(
+      new THREE.EdgesGeometry(zoneGeo),
+      new THREE.LineBasicMaterial({ color: 0x6d8dff, transparent: true, opacity: 0.85 })
+    );
+    zone.position.set(-0.06, 0, 0.0);
+    scene.add(zone);
+
+    // swing plane, bounded to the downswing path
+    (() => {
+      const n = V(PLANE.normal);
+      const u = V(PLANE.u);
+      const v = new THREE.Vector3().crossVectors(n, u).normalize();
+      const c = V(PLANE.center);
+      let aMin = Infinity, aMax = -Infinity, bMin = Infinity, bMax = -Infinity;
+      for (const p of D) {
+        const pp = V(p).sub(c);
+        const a = pp.dot(u), b = pp.dot(v);
+        aMin = Math.min(aMin, a); aMax = Math.max(aMax, a);
+        bMin = Math.min(bMin, b); bMax = Math.max(bMax, b);
+      }
+      const plane = new THREE.Mesh(
+        new THREE.PlaneGeometry(aMax - aMin, bMax - bMin),
+        new THREE.MeshBasicMaterial({ color: 0x6d8dff, transparent: true, opacity: 0.06, side: THREE.DoubleSide, depthWrite: false })
+      );
+      const basis = new THREE.Matrix4().makeBasis(u, v, n);
+      plane.quaternion.setFromRotationMatrix(basis);
+      plane.position.copy(c).add(u.clone().multiplyScalar((aMin + aMax) / 2)).add(v.clone().multiplyScalar((bMin + bMax) / 2));
+      scene.add(plane);
+    })();
+
+    // hands path (dashed)
+    const handsLine = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints(O.map(V)),
+      new THREE.LineDashedMaterial({ color: 0x8d96ad, dashSize: 0.03, gapSize: 0.03, transparent: true, opacity: 0.6 })
+    );
+    handsLine.computeLineDistances();
+    scene.add(handsLine);
+
+    // barrel path (gradient tube)
+    const curve = new THREE.CatmullRomCurve3(D.map(V));
+    const tube = new THREE.TubeGeometry(curve, 260, 0.011, 10, false);
+    {
+      const cA = new THREE.Color(0x6d8dff);
+      const cB = new THREE.Color(0xff5fa2);
+      const uv = tube.attributes.uv;
+      const pos = tube.attributes.position;
+      const colors = [];
+      const tmp = new THREE.Color();
+      for (let i = 0; i < pos.count; i++) {
+        tmp.copy(cA).lerp(cB, uv.getX(i));
+        colors.push(tmp.r, tmp.g, tmp.b);
+      }
+      tube.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    }
+    scene.add(new THREE.Mesh(tube, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.45, metalness: 0.1, emissive: 0x140a1e, emissiveIntensity: 0.6 })));
+
+    // contact marker
+    const contact = new THREE.Mesh(
+      new THREE.TorusGeometry(0.035, 0.005, 8, 24),
+      new THREE.MeshBasicMaterial({ color: 0xeaeefb, transparent: true, opacity: 0.8 })
+    );
+    scene.add(contact);
+
+    // bat
+    const batLen = V(D[CI]).distanceTo(V(O[CI]));
+    const batGeo = new THREE.CylinderGeometry(0.013, 0.026, batLen, 14, 1);
+    batGeo.rotateX(Math.PI / 2);
+    batGeo.translate(0, 0, batLen / 2);
+    {
+      const cA = new THREE.Color(0x9db4ff);
+      const cB = new THREE.Color(0xff5fa2);
+      const pos = batGeo.attributes.position;
+      const colors = [];
+      const tmp = new THREE.Color();
+      for (let i = 0; i < pos.count; i++) {
+        const t = Math.max(0, Math.min(1, pos.getZ(i) / batLen));
+        tmp.copy(cA).lerp(cB, t);
+        colors.push(tmp.r, tmp.g, tmp.b);
+      }
+      batGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    }
+    const bat = new THREE.Mesh(batGeo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.15 }));
+    scene.add(bat);
+    const knob = new THREE.Mesh(new THREE.SphereGeometry(0.022, 12, 12), new THREE.MeshStandardMaterial({ color: 0x2c3350 }));
+    scene.add(knob);
+    const sweet = new THREE.Mesh(new THREE.SphereGeometry(0.019, 12, 12), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xff5fa2, emissiveIntensity: 0.4 }));
+    scene.add(sweet);
+
+    const ZAXIS = new THREE.Vector3(0, 0, 1);
+    let idx = idxForT(-330);
+
+    function updateBat() {
+      const o = V(O[idx]), d = V(D[idx]);
+      const dirv = d.clone().sub(o);
+      const len = dirv.length() || 1;
+      const q = new THREE.Quaternion().setFromUnitVectors(ZAXIS, dirv.clone().normalize());
+      bat.quaternion.copy(q);
+      bat.position.copy(o);
+      knob.position.copy(o);
+      sweet.position.copy(o).add(dirv.multiplyScalar(0.82));
     }
 
-    function nearestStop(p) {
-      let best = 0;
-      let bd = Infinity;
-      STOPS.forEach((s, i) => {
-        const d = Math.abs(s.u - p);
-        if (d < bd) {
-          bd = d;
-          best = i;
-        }
-      });
+    // ---- sizing ----
+    let cw = 1, ch = 1;
+    function resize() {
+      const r = el.canvas.getBoundingClientRect();
+      cw = r.width; ch = r.height;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      renderer.setPixelRatio(dpr);
+      renderer.setSize(cw, ch, false);
+      camera.aspect = cw / Math.max(1, ch);
+      camera.updateProjectionMatrix();
+      el.overlay.width = Math.round(cw * dpr);
+      el.overlay.height = Math.round(ch * dpr);
+      el.overlay.style.width = cw + 'px';
+      el.overlay.style.height = ch + 'px';
+      octx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    // ---- callouts ----
+    const projected = [];
+    function anchor3(kind, stop) {
+      if (kind === 'hands') return O[idx];
+      if (kind === 'knob') return [0, 1, 2].map((a) => O[idx][a] + 0.17 * (D[idx][a] - O[idx][a]));
+      if (kind === 'sweet') return [0, 1, 2].map((a) => O[idx][a] + 0.82 * (D[idx][a] - O[idx][a]));
+      if (kind === 'barrel') return D[idx];
+      if (kind === 'window') {
+        const mid = idxForT((stop.win[0] + stop.win[1]) / 2);
+        return D[mid];
+      }
+      return D[idx];
+    }
+    function project3(p) {
+      const v = V(p).project(camera);
+      return { x: (v.x * 0.5 + 0.5) * cw, y: (-v.y * 0.5 + 0.5) * ch, z: v.z };
+    }
+
+    function renderCallouts(stop) {
+      const CW = 200, CH = 52;
+      el.callouts.textContent = '';
+      projected.length = 0;
+      for (const id of stop.ids) {
+        const m = byId(id);
+        const spec = ANCHOR[id];
+        if (!m || !spec) continue;
+        const s = project3(anchor3(spec.kind, stop));
+        let bx = Math.max(10, Math.min(cw - CW - 10, s.x + spec.dx));
+        let by = Math.max(10, Math.min(ch - CH - 10, s.y + spec.dy));
+        projected.push({ s, box: { x: bx + CW / 2, y: by + CH / 2 } });
+        const box = document.createElement('button');
+        box.className = 'bp-callout';
+        box.type = 'button';
+        box.dataset.metric = id;
+        box.style.left = bx + 'px';
+        box.style.top = by + 'px';
+        box.innerHTML = `<span class="bp-callout__title">${m.key ? '★ ' : ''}${m.name}</span><span class="bp-callout__sub">${stop.label}${m.unit ? ' · ' + m.unit : ''}</span>`;
+        el.callouts.appendChild(box);
+      }
+    }
+
+    function drawOverlay() {
+      octx.clearRect(0, 0, cw, ch);
+      octx.strokeStyle = 'rgba(141,150,173,0.75)';
+      octx.fillStyle = '#ff5fa2';
+      octx.lineWidth = 1;
+      for (const { s, box } of projected) {
+        octx.beginPath();
+        octx.moveTo(s.x, s.y);
+        octx.lineTo(box.x, box.y);
+        octx.stroke();
+        octx.beginPath();
+        octx.arc(s.x, s.y, 3.5, 0, Math.PI * 2);
+        octx.fill();
+      }
+    }
+
+    function nearestStop() {
+      const t = T[idx];
+      let best = 0, bd = Infinity;
+      STOPS.forEach((s, i) => { const d = Math.abs(s.t - t); if (d < bd) { bd = d; best = i; } });
       return best;
     }
 
-    function makeCallout(metricId, stop, currentU) {
-      const m = byId(metricId);
-      const spec = CALLOUT_LAYOUT[metricId];
-      if (!m || !spec) return;
-      const anchor = anchorPoint(spec.anchor, currentU, stop.segment);
-      let bx = anchor.x + spec.dx;
-      let by = anchor.y + spec.dy;
-      bx = Math.max(18, Math.min(VIEW_W - CALLOUT_W - 18, bx));
-      by = Math.max(18, Math.min(VIEW_H - CALLOUT_H - 18, by));
-      const cx = bx + CALLOUT_W / 2;
-      const cy = by + CALLOUT_H / 2;
+    // ---- animation loop ----
+    let playing = false, targetIdx = 0, holdUntil = 0;
+    function stopPlay() { playing = false; el.play.textContent = '▶ Swing'; }
 
-      const g = el('g', { class: 'bp-callout', 'data-metric': metricId, tabindex: '0', role: 'button' });
-      g.appendChild(el('line', { x1: anchor.x, y1: anchor.y, x2: cx, y2: cy, class: 'bp-leader-line' }));
-      g.appendChild(el('circle', { cx: anchor.x, cy: anchor.y, r: 4, class: 'bp-anchor-dot' }));
-      g.appendChild(el('rect', { x: bx, y: by, width: CALLOUT_W, height: CALLOUT_H, rx: 6, class: 'bp-callout-box' }));
-      g.appendChild(el('rect', { x: bx, y: by + 8, width: 3, height: CALLOUT_H - 16, rx: 1.5, class: 'bp-callout-bar' }));
-
-      const title = el('text', { x: bx + 16, y: by + 23, class: 'bp-callout-title' });
-      title.textContent = (m.key ? '★ ' : '') + m.name;
-      g.appendChild(title);
-
-      const sub = el('text', { x: bx + 16, y: by + 40, class: 'bp-callout-sub' });
-      sub.textContent = m.unit ? `${stop.label} · ${m.unit}` : stop.label;
-      g.appendChild(sub);
-
-      scene.appendChild(g);
-    }
-
-    function render(p) {
-      scene.textContent = '';
-      const stopIdx = nearestStop(p);
-      const stop = STOPS[stopIdx];
-
-      // highlighted windows (faint, brightened when active)
-      STOPS.forEach((s) => {
-        if (!s.segment) return;
-        const active = s === stop;
-        scene.appendChild(
-          el('path', {
-            d: barrelSlice(s.segment[0], s.segment[1], 30),
-            class: active ? 'bp-window bp-window--active' : 'bp-window',
-            fill: 'none',
-          })
-        );
-      });
-
-      // traveled arc
-      if (p > 0.005) {
-        scene.appendChild(el('path', { d: barrelSlice(0, p, 40), class: 'bp-trail', fill: 'none' }));
-      }
-
-      // time-to-contact bracket across the downswing
-      if (stopIdx >= 1 && stopIdx <= 5) {
-        scene.appendChild(el('path', { d: offsetSlice(0.12, CONTACT_U, 0.24, 26), class: 'bp-ttc', fill: 'none' }));
-        const mid = barrelAt(0.4);
-        const t = el('text', { x: mid.x - 40, y: mid.y + 104, class: 'bp-ttc-label' });
-        t.textContent = 'Time to Contact';
-        scene.appendChild(t);
-      }
-
-      // bat
-      scene.appendChild(el('polygon', { points: batPolygon(p), class: 'bp-bat' }));
-      const h = handsAt(p);
-      scene.appendChild(el('circle', { cx: h.x, cy: h.y, r: 7, class: 'bp-knob' }));
-
-      // sweet spot
-      const sweet = pointAlongBat(p, 0.74);
-      scene.appendChild(el('circle', { cx: sweet.x, cy: sweet.y, r: 5.5, class: 'bp-sweet' }));
-
-      // velocity (attack-angle) arrow
-      const brl = barrelAt(p);
-      const ang = 12 * (Math.PI / 180);
-      scene.appendChild(
-        el('line', {
-          x1: brl.x,
-          y1: brl.y,
-          x2: brl.x + 118 * Math.cos(ang),
-          y2: brl.y - 118 * Math.sin(ang),
-          class: 'bp-vel',
-          'marker-end': 'url(#bp-vel-arrow)',
-        })
-      );
-      const vlabel = el('text', { x: brl.x + 126, y: brl.y - 40, class: 'bp-vel-label' });
-      vlabel.textContent = 'attack angle';
-      scene.appendChild(vlabel);
-
-      // callouts
-      stop.metricIds.forEach((id) => makeCallout(id, stop, p));
-
-      // hud
-      stopEl.textContent = stop.label;
-      blurbEl.textContent = stop.blurb;
-      progressFill.style.width = `${(p * 100).toFixed(1)}%`;
-      document.querySelectorAll('.bp-node').forEach((n) => n.classList.remove('is-active'));
-    }
-
-    function setU(p, snap = true) {
-      u = Math.max(0, Math.min(1, p));
-      if (snap) {
-        for (const s of STOPS) {
-          if (Math.abs(s.u - u) < 0.035) {
-            u = s.u;
-            break;
+    function frame(ts) {
+      requestAnimationFrame(frame);
+      if (playing) {
+        if (!holdUntil || ts >= holdUntil) {
+          const goal = idxForT(STOPS[targetIdx].t);
+          const diff = goal - idx;
+          if (Math.abs(diff) <= 0.6) {
+            idx = goal;
+            if (targetIdx >= STOPS.length - 1) { stopPlay(); }
+            else { holdUntil = ts + 1000; targetIdx += 1; }
+          } else {
+            idx = Math.round(idx + Math.sign(diff) * Math.min(Math.abs(diff), 1.1));
           }
         }
       }
-      render(u);
+      updateBat();
+      controls.update();
+      renderer.render(scene, camera);
+
+      const stop = STOPS[nearestStop()];
+      el.stop.textContent = stop.label;
+      el.blurb.textContent = stop.blurb;
+      el.progress.style.width = `${(idx / (D.length - 1)) * 100}%`;
+      renderCallouts(stop);
+      drawOverlay();
     }
 
-    // ---- drag: anywhere on the diagram moves the bat ----
-    function pointerToU(evt) {
-      const ctm = svg.getScreenCTM().inverse();
-      const p = new DOMPoint(evt.clientX, evt.clientY).matrixTransform(ctm);
-      return nearestU({ x: p.x, y: p.y });
-    }
-
-    let dragging = false;
-    svg.style.cursor = 'grab';
-    svg.addEventListener('pointerdown', (e) => {
-      if (e.target.closest && e.target.closest('.bp-callout')) return;
-      dragging = true;
-      stopPlay();
-      svg.setPointerCapture(e.pointerId);
-      svg.style.cursor = 'grabbing';
-      setU(pointerToU(e), false);
-    });
-    svg.addEventListener('pointermove', (e) => {
-      if (dragging) setU(pointerToU(e), false);
-    });
-    const endDrag = (e) => {
-      if (!dragging) return;
-      dragging = false;
-      svg.style.cursor = 'grab';
-      try {
-        svg.releasePointerCapture(e.pointerId);
-      } catch (err) {
-        /* already released */
+    function setT(t) {
+      idx = Math.max(0, Math.min(D.length - 1, idxForT(t)));
+      for (const s of STOPS) {
+        if (Math.abs(T[idx] - s.t) < 22) { idx = idxForT(s.t); break; }
       }
-      setU(u, true);
-    };
-    svg.addEventListener('pointerup', endDrag);
-    svg.addEventListener('pointercancel', endDrag);
+    }
 
+    // ---- controls ----
+    el.play.addEventListener('click', () => {
+      if (playing) { stopPlay(); return; }
+      playing = true; holdUntil = 0; el.play.textContent = '❚❚ Pause';
+      let i = STOPS.findIndex((s) => idxForT(s.t) > idx + 1);
+      if (i < 0) { idx = idxForT(STOPS[0].t); i = 1; }
+      targetIdx = i;
+    });
+    document.getElementById('bp-prev').addEventListener('click', () => { stopPlay(); setT(STOPS[Math.max(0, nearestStop() - 1)].t); });
+    document.getElementById('bp-next').addEventListener('click', () => { stopPlay(); setT(STOPS[Math.min(STOPS.length - 1, nearestStop() + 1)].t); });
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') {
-        stopPlay();
-        setU(u + 0.03);
-      }
-      if (e.key === 'ArrowRight') {
-        stopPlay();
-        setU(u - 0.03);
-      }
+      if (e.key === 'ArrowLeft') { stopPlay(); setT(T[idx] + 12); }
+      if (e.key === 'ArrowRight') { stopPlay(); setT(T[idx] - 12); }
     });
 
-    // ---- autoplay ----
-    let playing = false;
-    let raf = null;
-    let targetIdx = 0;
-    let holdUntil = 0;
-
-    function stopPlay() {
-      playing = false;
-      if (raf) cancelAnimationFrame(raf);
-      raf = null;
-      playBtn.textContent = '▶ Swing';
-    }
-
-    function tick(ts) {
-      if (!playing) return;
-      if (holdUntil && ts < holdUntil) {
-        raf = requestAnimationFrame(tick);
-        return;
-      }
-      const goal = STOPS[targetIdx].u;
-      const diff = goal - u;
-      if (Math.abs(diff) <= 0.004) {
-        setU(goal);
-        if (targetIdx >= STOPS.length - 1) {
-          stopPlay();
-          return;
-        }
-        holdUntil = ts + 1050;
-        targetIdx += 1;
-      } else {
-        setU(u + Math.sign(diff) * Math.min(Math.abs(diff), 0.008), false);
-      }
-      raf = requestAnimationFrame(tick);
-    }
-
-    playBtn.addEventListener('click', () => {
-      if (playing) {
-        stopPlay();
-        return;
-      }
-      playing = true;
-      holdUntil = 0;
-      playBtn.textContent = '❚❚ Pause';
-      let idx = STOPS.findIndex((s) => s.u > u + 0.005);
-      if (idx < 0) {
-        setU(STOPS[0].u);
-        idx = 1;
-      }
-      targetIdx = idx;
-      raf = requestAnimationFrame(tick);
+    STOPS.forEach((s) => {
+      const b = document.createElement('button');
+      b.className = 'bp-seg';
+      b.type = 'button';
+      b.dataset.stop = s.key;
+      b.innerHTML = `${s.label}${s.ids.length ? '<span class="bp-seg__dot"></span>' : ''}`;
+      b.addEventListener('click', () => { stopPlay(); setT(s.t); });
+      el.track.appendChild(b);
     });
 
-    document.getElementById('bp-prev').addEventListener('click', () => {
-      stopPlay();
-      const idx = Math.max(0, nearestStop(u) - 1);
-      setU(STOPS[idx].u);
-    });
-    document.getElementById('bp-next').addEventListener('click', () => {
-      stopPlay();
-      const idx = Math.min(STOPS.length - 1, nearestStop(u) + 1);
-      setU(STOPS[idx].u);
-    });
-
-    // ---- slide-over panel ----
+    // ---- panel ----
     function renderPanel(id) {
       const m = byId(id);
       if (!m) return;
-      const levels = m.levels
-        ? `<dt>Levels</dt><dd>${m.levels.map((l) => `${l.label}: ${l.value}`).join('<br>')}</dd>`
-        : '';
-      const flags = m.flags.length
-        ? `<dt>Watch for</dt><dd><ul>${m.flags.map((f) => `<li>${f}</li>`).join('')}</ul></dd>`
-        : '';
+      const levels = m.levels ? `<dt>Levels</dt><dd>${m.levels.map((l) => `${l.label}: ${l.value}`).join('<br>')}</dd>` : '';
+      const flags = m.flags.length ? `<dt>Watch for</dt><dd><ul>${m.flags.map((f) => `<li>${f}</li>`).join('')}</ul></dd>` : '';
       const related = m.related.length
-        ? `<ul class="bp-related">${m.related
-            .map((r) => `<li><button class="bp-chip" data-metric="${r}" type="button">${byId(r).name}</button></li>`)
-            .join('')}</ul>`
+        ? `<ul class="bp-related">${m.related.map((r) => `<li><button class="bp-chip" data-metric="${r}" type="button">${byId(r).name}</button></li>`).join('')}</ul>`
         : '';
-
-      panelBody.innerHTML = `
+      el.panelBody.innerHTML = `
         <p class="bp-drawer__phase">${m.key ? '★ Key metric' : 'Supporting metric'}</p>
         <h3>${m.name}${m.unit ? ` <span style="color: var(--muted); font-weight: 400; font-size: 1rem;">${m.unit}</span>` : ''}</h3>
         <dl class="bp-spec">
@@ -519,64 +536,53 @@ const zoneCy = zone.y + zone.h / 2;
           <dt>Target</dt><dd><strong>${m.target}</strong></dd>
           ${m.inGym ? `<dt>In-gym pro</dt><dd>${m.inGym}</dd>` : ''}
           ${m.mlb ? `<dt>MLB</dt><dd>${m.mlb}</dd>` : ''}
-          ${levels}
-          ${flags}
+          ${levels}${flags}
         </dl>
         ${related ? `<p style="font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 1.3rem 0 0;">Related</p>${related}` : ''}
       `;
     }
-
     function openPanel(id) {
       renderPanel(id);
-      panel.classList.add('is-open');
-      panel.setAttribute('aria-hidden', 'false');
-      scrim.hidden = false;
-      requestAnimationFrame(() => scrim.classList.add('is-on'));
+      el.panel.classList.add('is-open');
+      el.panel.setAttribute('aria-hidden', 'false');
+      el.scrim.hidden = false;
+      requestAnimationFrame(() => el.scrim.classList.add('is-on'));
     }
     function closePanel() {
-      panel.classList.remove('is-open');
-      panel.setAttribute('aria-hidden', 'true');
-      scrim.classList.remove('is-on');
-      setTimeout(() => {
-        scrim.hidden = true;
-      }, 220);
+      el.panel.classList.remove('is-open');
+      el.panel.setAttribute('aria-hidden', 'true');
+      el.scrim.classList.remove('is-on');
+      setTimeout(() => { el.scrim.hidden = true; }, 220);
     }
-
     document.getElementById('bp-panel-close').addEventListener('click', closePanel);
-    scrim.addEventListener('click', closePanel);
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closePanel();
-    });
-
+    el.scrim.addEventListener('click', closePanel);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanel(); });
     document.addEventListener('click', (e) => {
       const t = e.target.closest('[data-metric]');
       if (t) {
-        openPanel(t.getAttribute('data-metric'));
-        document.querySelectorAll('.bp-node').forEach((n) => {
-          n.classList.toggle('is-active', n.getAttribute('data-metric') === t.getAttribute('data-metric'));
-        });
+        openPanel(t.dataset.metric);
+        document.querySelectorAll('.bp-node').forEach((n) => n.classList.toggle('is-active', n.dataset.metric === t.dataset.metric));
       }
     });
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
       const n = document.activeElement;
       if (n && n.classList && (n.classList.contains('bp-callout') || n.classList.contains('bp-node'))) {
-        e.preventDefault();
-        openPanel(n.getAttribute('data-metric'));
+        e.preventDefault(); openPanel(n.dataset.metric);
       }
     });
 
     // ---- init ----
-    const startU = (() => {
-      const q = new URLSearchParams(location.search).get('checkpoint');
-      if (!q) return STOPS[1].u;
+    resize();
+    const q = new URLSearchParams(location.search).get('checkpoint');
+    if (q) {
       const contactIds = ['bat-speed', 'attack-angle', 'vertical-bat-angle', 'connection-at-impact'];
-      if (contactIds.includes(q)) return CONTACT_U;
-      const s = STOPS.find((x) => x.key === q);
-      return s ? s.u : STOPS[1].u;
-    })();
-    setU(startU, false);
-    render(u);
+      if (contactIds.includes(q)) idx = idxForT(0);
+      else { const s = STOPS.find((x) => x.key === q); if (s) idx = idxForT(s.t); }
+    }
+    window.addEventListener('resize', resize);
+    new ResizeObserver(resize).observe(el.canvas);
+    requestAnimationFrame(frame);
 
     const openId = new URLSearchParams(location.search).get('open');
     if (openId && byId(openId)) openPanel(openId);
