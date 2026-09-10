@@ -2,9 +2,9 @@
 import Base from '../../layouts/Base.astro';
 import Fractal from '../../components/Fractal.astro';
 import { metrics, sourceNote } from '../../data/blastMetrics';
-import { planePath, zone, body, VIEW_W, VIEW_H } from '../../lib/swing';
+import { guidePath, zone, body, VIEW_W, VIEW_H } from '../../lib/swing';
 
-const fullPlane = planePath(0, 360, 4);
+const fullPlane = guidePath();
 const zoneCx = zone.x + zone.w / 2;
 const zoneCy = zone.y + zone.h / 2;
 ---
@@ -20,9 +20,9 @@ const zoneCy = zone.y + zone.h / 2;
       <h1 class="reveal" style="--i:1">Blast Motion metrics, from the ground up</h1>
       <p class="lede reveal" style="--i:2">
         A bat sensor does not tell you whether a swing is good. It tells you <em>where</em> the bat was
-        and <em>how fast</em> at a few specific instants. Below, the swing plane is the ellipse around
-        the body that Blast builds backward from the vertical bat angle at contact. Drag the bat
-        around it — it pauses at each metric and shows you where that number comes from.
+        and <em>how fast</em> at a few specific instants. Below, the barrel traces a real swing arc
+        through the plane Blast builds from the vertical bat angle at contact. Drag the bat along it —
+        it pauses at each metric and shows you where that number comes from.
       </p>
     </header>
 
@@ -44,7 +44,7 @@ const zoneCy = zone.y + zone.h / 2;
           viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
           preserveAspectRatio="xMidYMid meet"
           role="img"
-          aria-label="An ellipse representing the swing plane around a hitter's body, with a bat that can be dragged around it"
+          aria-label="A bat tracing a swing arc through the strike zone, with metrics that can be dragged through the swing"
         >
           <defs>
             <linearGradient id="bp-batgrad" x1="0" y1="0" x2="1" y2="1">
@@ -59,7 +59,7 @@ const zoneCy = zone.y + zone.h / 2;
           <!-- ground shadow -->
           <ellipse cx={body.x} cy={body.y + 212} rx="280" ry="44" fill="var(--accent-a)" opacity="0.05"></ellipse>
 
-          <!-- swing plane -->
+          <!-- swing plane (faint guide) -->
           <path d={fullPlane} class="bp-plane" fill="none"></path>
 
           <!-- strike zone -->
@@ -225,19 +225,15 @@ const zoneCy = zone.y + zone.h / 2;
     import { metrics } from '../../data/blastMetrics';
     import {
       STOPS,
-      PHI_LOAD,
-      PHI_FINISH,
-      CX,
-      CY,
-      A,
-      B,
-      TILT,
-      barrelPoint,
-      handsPoint,
+      CONTACT_U,
+      barrelAt,
+      handsAt,
       pointAlongBat,
-      planePath,
+      barrelSlice,
+      offsetSlice,
       batPolygon,
       anchorPoint,
+      nearestU,
       CALLOUT_LAYOUT,
       CALLOUT_W,
       CALLOUT_H,
@@ -258,7 +254,7 @@ const zoneCy = zone.y + zone.h / 2;
     const panelBody = document.getElementById('bp-panel-body');
     const scrim = document.getElementById('bp-scrim');
 
-    let phi = STOPS[1].phi; // open on the first real metric checkpoint
+    let u = STOPS[1].u;
 
     function el(tag, attrs = {}) {
       const n = document.createElementNS(NS, tag);
@@ -270,7 +266,7 @@ const zoneCy = zone.y + zone.h / 2;
       let best = 0;
       let bd = Infinity;
       STOPS.forEach((s, i) => {
-        const d = Math.abs(s.phi - p);
+        const d = Math.abs(s.u - p);
         if (d < bd) {
           bd = d;
           best = i;
@@ -279,11 +275,11 @@ const zoneCy = zone.y + zone.h / 2;
       return best;
     }
 
-    function makeCallout(metricId, stop, currentPhi) {
+    function makeCallout(metricId, stop, currentU) {
       const m = byId(metricId);
       const spec = CALLOUT_LAYOUT[metricId];
       if (!m || !spec) return;
-      const anchor = anchorPoint(spec.anchor, currentPhi, stop.segment);
+      const anchor = anchorPoint(spec.anchor, currentU, stop.segment);
       let bx = anchor.x + spec.dx;
       let by = anchor.y + spec.dy;
       bx = Math.max(18, Math.min(VIEW_W - CALLOUT_W - 18, bx));
@@ -292,11 +288,8 @@ const zoneCy = zone.y + zone.h / 2;
       const cy = by + CALLOUT_H / 2;
 
       const g = el('g', { class: 'bp-callout', 'data-metric': metricId, tabindex: '0', role: 'button' });
-
-      // leader line + anchor dot
       g.appendChild(el('line', { x1: anchor.x, y1: anchor.y, x2: cx, y2: cy, class: 'bp-leader-line' }));
       g.appendChild(el('circle', { cx: anchor.x, cy: anchor.y, r: 4, class: 'bp-anchor-dot' }));
-
       g.appendChild(el('rect', { x: bx, y: by, width: CALLOUT_W, height: CALLOUT_H, rx: 6, class: 'bp-callout-box' }));
       g.appendChild(el('rect', { x: bx, y: by + 8, width: 3, height: CALLOUT_H - 16, rx: 1.5, class: 'bp-callout-bar' }));
 
@@ -316,13 +309,13 @@ const zoneCy = zone.y + zone.h / 2;
       const stopIdx = nearestStop(p);
       const stop = STOPS[stopIdx];
 
-      // on-plane / rotational-acceleration windows (faint, brightened when active)
+      // highlighted windows (faint, brightened when active)
       STOPS.forEach((s) => {
         if (!s.segment) return;
         const active = s === stop;
         scene.appendChild(
           el('path', {
-            d: planePath(s.segment[0], s.segment[1], 3),
+            d: barrelSlice(s.segment[0], s.segment[1], 30),
             class: active ? 'bp-window bp-window--active' : 'bp-window',
             fill: 'none',
           })
@@ -330,28 +323,22 @@ const zoneCy = zone.y + zone.h / 2;
       });
 
       // traveled arc
-      if (p > PHI_LOAD + 2) {
-        scene.appendChild(el('path', { d: planePath(PHI_LOAD, p, 3), class: 'bp-trail', fill: 'none' }));
+      if (p > 0.005) {
+        scene.appendChild(el('path', { d: barrelSlice(0, p, 40), class: 'bp-trail', fill: 'none' }));
       }
 
       // time-to-contact bracket across the downswing
       if (stopIdx >= 1 && stopIdx <= 5) {
-        const b = el('path', {
-          d: ellipseArc(212, 318, 0.84),
-          class: 'bp-ttc',
-          fill: 'none',
-        });
-        scene.appendChild(b);
-        const mid = barrelPoint(265);
-        const t = el('text', { x: mid.x - 150, y: mid.y + 92, class: 'bp-ttc-label' });
+        scene.appendChild(el('path', { d: offsetSlice(0.12, CONTACT_U, 0.24, 26), class: 'bp-ttc', fill: 'none' }));
+        const mid = barrelAt(0.4);
+        const t = el('text', { x: mid.x - 40, y: mid.y + 104, class: 'bp-ttc-label' });
         t.textContent = 'Time to Contact';
         scene.appendChild(t);
       }
 
       // bat
-      const bat = el('polygon', { points: batPolygon(p), class: 'bp-bat' });
-      scene.appendChild(bat);
-      const h = handsPoint(p);
+      scene.appendChild(el('polygon', { points: batPolygon(p), class: 'bp-bat' }));
+      const h = handsAt(p);
       scene.appendChild(el('circle', { cx: h.x, cy: h.y, r: 7, class: 'bp-knob' }));
 
       // sweet spot
@@ -359,19 +346,19 @@ const zoneCy = zone.y + zone.h / 2;
       scene.appendChild(el('circle', { cx: sweet.x, cy: sweet.y, r: 5.5, class: 'bp-sweet' }));
 
       // velocity (attack-angle) arrow
-      const brl = barrelPoint(p);
+      const brl = barrelAt(p);
       const ang = 12 * (Math.PI / 180);
       scene.appendChild(
         el('line', {
           x1: brl.x,
           y1: brl.y,
-          x2: brl.x + 120 * Math.cos(ang),
-          y2: brl.y - 120 * Math.sin(ang),
+          x2: brl.x + 118 * Math.cos(ang),
+          y2: brl.y - 118 * Math.sin(ang),
           class: 'bp-vel',
           'marker-end': 'url(#bp-vel-arrow)',
         })
       );
-      const vlabel = el('text', { x: brl.x + 128, y: brl.y - 42, class: 'bp-vel-label' });
+      const vlabel = el('text', { x: brl.x + 126, y: brl.y - 40, class: 'bp-vel-label' });
       vlabel.textContent = 'attack angle';
       scene.appendChild(vlabel);
 
@@ -381,69 +368,42 @@ const zoneCy = zone.y + zone.h / 2;
       // hud
       stopEl.textContent = stop.label;
       blurbEl.textContent = stop.blurb;
-      progressFill.style.width = `${(((p - PHI_LOAD) / (PHI_FINISH - PHI_LOAD)) * 100).toFixed(1)}%`;
+      progressFill.style.width = `${(p * 100).toFixed(1)}%`;
       document.querySelectorAll('.bp-node').forEach((n) => n.classList.remove('is-active'));
     }
 
-    function ellipseArc(phi0, phi1, scale) {
-      const step = 3;
-      const dir = phi1 >= phi0 ? 1 : -1;
-      const pts = [];
-      for (let p = phi0; dir > 0 ? p <= phi1 : p >= phi1; p += dir * step) {
-        const t = p * (Math.PI / 180);
-        const rot = (x, y) => {
-          const c = Math.cos((TILT * Math.PI) / 180);
-          const s = Math.sin((TILT * Math.PI) / 180);
-          return { x: x * c - y * s, y: x * s + y * c };
-        };
-        const q = rot(A * scale * Math.cos(t), B * scale * Math.sin(t));
-        pts.push(`${(CX + q.x).toFixed(1)},${(CY - q.y).toFixed(1)}`);
-      }
-      return 'M' + pts.join(' L');
-    }
-
-    function setPhi(p, snap = true) {
-      phi = Math.max(PHI_LOAD, Math.min(PHI_FINISH, p));
+    function setU(p, snap = true) {
+      u = Math.max(0, Math.min(1, p));
       if (snap) {
         for (const s of STOPS) {
-          if (Math.abs(s.phi - phi) < 6) {
-            phi = s.phi;
+          if (Math.abs(s.u - u) < 0.035) {
+            u = s.u;
             break;
           }
         }
       }
-      render(phi);
+      render(u);
     }
 
-    // ---- drag ----
-    function pointerToPhi(evt) {
+    // ---- drag: anywhere on the diagram moves the bat ----
+    function pointerToU(evt) {
       const ctm = svg.getScreenCTM().inverse();
-      const scr = new DOMPoint(evt.clientX, evt.clientY).matrixTransform(ctm);
-      const dx = scr.x - CX;
-      const dy = -(scr.y - CY);
-      const c = Math.cos((-TILT * Math.PI) / 180);
-      const s = Math.sin((-TILT * Math.PI) / 180);
-      const x = dx * c - dy * s;
-      const y = dx * s + dy * c;
-      let p = (Math.atan2(y / B, x / A) * 180) / Math.PI;
-      while (p < PHI_LOAD - 70) p += 360;
-      while (p > PHI_FINISH + 70) p -= 360;
-      return p;
+      const p = new DOMPoint(evt.clientX, evt.clientY).matrixTransform(ctm);
+      return nearestU({ x: p.x, y: p.y });
     }
 
     let dragging = false;
     svg.style.cursor = 'grab';
     svg.addEventListener('pointerdown', (e) => {
-      // let callout boxes be clicked without starting a drag
       if (e.target.closest && e.target.closest('.bp-callout')) return;
       dragging = true;
       stopPlay();
       svg.setPointerCapture(e.pointerId);
       svg.style.cursor = 'grabbing';
-      setPhi(pointerToPhi(e));
+      setU(pointerToU(e), false);
     });
     svg.addEventListener('pointermove', (e) => {
-      if (dragging) setPhi(pointerToPhi(e));
+      if (dragging) setU(pointerToU(e), false);
     });
     const endDrag = (e) => {
       if (!dragging) return;
@@ -454,6 +414,7 @@ const zoneCy = zone.y + zone.h / 2;
       } catch (err) {
         /* already released */
       }
+      setU(u, true);
     };
     svg.addEventListener('pointerup', endDrag);
     svg.addEventListener('pointercancel', endDrag);
@@ -461,11 +422,11 @@ const zoneCy = zone.y + zone.h / 2;
     document.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowLeft') {
         stopPlay();
-        setPhi(phi + 4);
+        setU(u + 0.03);
       }
       if (e.key === 'ArrowRight') {
         stopPlay();
-        setPhi(phi - 4);
+        setU(u - 0.03);
       }
     });
 
@@ -488,10 +449,10 @@ const zoneCy = zone.y + zone.h / 2;
         raf = requestAnimationFrame(tick);
         return;
       }
-      const goal = STOPS[targetIdx].phi;
-      const diff = goal - phi;
-      if (Math.abs(diff) <= 1.5) {
-        setPhi(goal);
+      const goal = STOPS[targetIdx].u;
+      const diff = goal - u;
+      if (Math.abs(diff) <= 0.004) {
+        setU(goal);
         if (targetIdx >= STOPS.length - 1) {
           stopPlay();
           return;
@@ -499,7 +460,7 @@ const zoneCy = zone.y + zone.h / 2;
         holdUntil = ts + 1050;
         targetIdx += 1;
       } else {
-        setPhi(phi + Math.sign(diff) * Math.min(Math.abs(diff), 2.4));
+        setU(u + Math.sign(diff) * Math.min(Math.abs(diff), 0.008), false);
       }
       raf = requestAnimationFrame(tick);
     }
@@ -512,9 +473,9 @@ const zoneCy = zone.y + zone.h / 2;
       playing = true;
       holdUntil = 0;
       playBtn.textContent = '❚❚ Pause';
-      let idx = STOPS.findIndex((s) => s.phi > phi + 2);
+      let idx = STOPS.findIndex((s) => s.u > u + 0.005);
       if (idx < 0) {
-        setPhi(STOPS[0].phi);
+        setU(STOPS[0].u);
         idx = 1;
       }
       targetIdx = idx;
@@ -523,13 +484,13 @@ const zoneCy = zone.y + zone.h / 2;
 
     document.getElementById('bp-prev').addEventListener('click', () => {
       stopPlay();
-      const idx = nearestStop(phi) - 1;
-      setPhi(STOPS[Math.max(0, idx)].phi);
+      const idx = Math.max(0, nearestStop(u) - 1);
+      setU(STOPS[idx].u);
     });
     document.getElementById('bp-next').addEventListener('click', () => {
       stopPlay();
-      const idx = nearestStop(phi) + 1;
-      setPhi(STOPS[Math.min(STOPS.length - 1, idx)].phi);
+      const idx = Math.min(STOPS.length - 1, nearestStop(u) + 1);
+      setU(STOPS[idx].u);
     });
 
     // ---- slide-over panel ----
@@ -590,7 +551,6 @@ const zoneCy = zone.y + zone.h / 2;
     document.addEventListener('click', (e) => {
       const t = e.target.closest('[data-metric]');
       if (t) {
-        // don't open from inside the already-open panel's related list unless it's a related chip
         openPanel(t.getAttribute('data-metric'));
         document.querySelectorAll('.bp-node').forEach((n) => {
           n.classList.toggle('is-active', n.getAttribute('data-metric') === t.getAttribute('data-metric'));
@@ -607,15 +567,16 @@ const zoneCy = zone.y + zone.h / 2;
     });
 
     // ---- init ----
-    const startPhi = (() => {
+    const startU = (() => {
       const q = new URLSearchParams(location.search).get('checkpoint');
-      if (!q) return STOPS[1].phi;
-      if (q === 'bat-speed' || q === 'attack-angle' || q === 'vertical-bat-angle' || q === 'connection-at-impact') return 318;
+      if (!q) return STOPS[1].u;
+      const contactIds = ['bat-speed', 'attack-angle', 'vertical-bat-angle', 'connection-at-impact'];
+      if (contactIds.includes(q)) return CONTACT_U;
       const s = STOPS.find((x) => x.key === q);
-      return s ? s.phi : STOPS[1].phi;
+      return s ? s.u : STOPS[1].u;
     })();
-    setPhi(startPhi, false);
-    render(phi);
+    setU(startU, false);
+    render(u);
 
     const openId = new URLSearchParams(location.search).get('open');
     if (openId && byId(openId)) openPanel(openId);
