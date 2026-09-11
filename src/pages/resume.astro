@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import Base from '../layouts/Base.astro';
-import { intro, roles, education, skills, writing } from '../data/resume';
+import { intro, roles, education, skills, certifications, athletics, writing } from '../data/resume';
 
 // drop a PDF at public/resume.pdf and the download link appears; no file, no link
 const hasPdf = fs.existsSync(path.join(process.cwd(), 'public', 'resume.pdf'));
@@ -10,25 +10,30 @@ const hasPdf = fs.existsSync(path.join(process.cwd(), 'public', 'resume.pdf'));
 
 <Base
   title="Resume — Stevie Thomas"
-  description="Hitting coach at Driveline Baseball. Coaching, biomechanics, and the tooling in between."
+  description="Hitting Trainer at Driveline Baseball. Coaching, biomechanics, and the tooling in between."
 >
   <section style="padding: clamp(2.5rem, 7vw, 4.5rem) 0 0;">
     <p class="eyebrow reveal" style="--i:0">Resume</p>
-    <h1 class="reveal" style="--i:1">Stevie Thomas</h1>
+    <h1 class="reveal" style="--i:1">Stephen “Stevie” Thomas</h1>
     <p class="lede reveal" style="--i:2">{intro}</p>
 
-    {
-      hasPdf && (
-        <p style="margin-top: 1.6rem;">
-          <a
-            href="/resume.pdf"
-            style="font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.13em; text-transform: uppercase; text-decoration: none; color: var(--muted);"
-          >
-            Download PDF →
-          </a>
-        </p>
-      )
-    }
+    <p
+      style="margin-top: 1.6rem; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted);"
+    >
+      <a href="mailto:mesteviet@gmail.com" style="text-decoration: none; color: inherit;">
+        mesteviet@gmail.com
+      </a>
+      {
+        hasPdf && (
+          <>
+            <span aria-hidden="true"> · </span>
+            <a href="/resume.pdf" style="text-decoration: none; color: inherit;">
+              Download PDF →
+            </a>
+          </>
+        )
+      }
+    </p>
   </section>
 
   {
@@ -42,7 +47,8 @@ const hasPdf = fs.existsSync(path.join(process.cwd(), 'public', 'resume.pdf'));
                 {role.title} <span>· {role.org}</span>
               </h3>
               <p class="cv-role__dates">
-                {role.start} — {role.end}
+                {role.start}
+                {role.end && ` — ${role.end}`}
                 {role.location && <> · {role.location}</>}
               </p>
             </div>
@@ -74,6 +80,52 @@ const hasPdf = fs.existsSync(path.join(process.cwd(), 'public', 'resume.pdf'));
                 <li>{item}</li>
               ))}
             </ul>
+          </article>
+        ))}
+      </section>
+    )
+  }
+
+  {
+    certifications.length > 0 && (
+      <section style="margin-top: clamp(2.5rem, 7vw, 4rem);">
+        <p class="section-label">Certifications</p>
+        <ul class="linklist">
+          {certifications.map((c) => (
+            <li>
+              <strong>{c.primary}</strong>
+              {c.secondary && <span>{c.secondary}</span>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  {
+    athletics.length > 0 && (
+      <section style="margin-top: clamp(2.5rem, 7vw, 4rem);">
+        <p class="section-label">Athletics</p>
+        {athletics.map((a) => (
+          <article class="cv-role">
+            <div class="cv-role__head">
+              <h3>
+                {a.title} <span>· {a.org}</span>
+              </h3>
+              <p class="cv-role__dates">
+                {a.start}
+                {a.end && ` — ${a.end}`}
+                {a.location && <> · {a.location}</>}
+              </p>
+            </div>
+            {a.blurb && <p>{a.blurb}</p>}
+            {a.points && a.points.length > 0 && (
+              <ul>
+                {a.points.map((pt) => (
+                  <li>{pt}</li>
+                ))}
+              </ul>
+            )}
           </article>
         ))}
       </section>

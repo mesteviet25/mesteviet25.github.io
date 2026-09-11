@@ -12,7 +12,7 @@ export type Role = {
   org: string;
   title: string;
   start: string; // "2023" or "Mar 2023" — free text, rendered as written
-  end: string; // use "Present" for current
+  end?: string; // use "Present" for current; leave off for a single-date entry
   location?: string;
   blurb?: string;
   points?: string[];
@@ -25,30 +25,62 @@ export type Entry = {
 };
 
 export const intro =
-  'Hitting coach at Driveline Baseball. I coach hitters day to day and build the measurement ' +
-  'and analysis tools that support it — bat tracking, motion capture, and public baseball data.';
+  'Hitting Trainer at Driveline Baseball in Tampa, Florida. I coach hitters across youth, ' +
+  'high school, college, and professional levels, and I build the measurement and analysis ' +
+  'behind it — bat tracking, motion capture, and public baseball data.';
 
 export const roles: Role[] = [
   {
     org: 'Driveline Baseball',
-    title: 'Hitting Coach',
-    start: 'TODO',
+    title: 'Hitting Trainer',
+    start: 'Jun 2026',
     end: 'Present',
-    location: 'Kent, WA',
+    location: 'Tampa, FL',
     blurb:
-      'Assessments, programming, and day-to-day cage work with a group of hitters, plus the ' +
-      'internal tooling and analysis behind it.',
+      'Data-driven hitting instruction for youth, high school, college, and professional ' +
+      'athletes, plus the research and tooling behind it.',
     points: [
-      'TODO — what you own, and the scale of it',
-      'TODO — a result you can state without exposing athlete data',
-      'TODO — the tooling or process you built that outlived a single season',
+      'Run athlete assessments and build individualized development plans using Launchpad, HitTrax, and Blast Motion.',
+      'Coach one-on-one and group sessions across swing design and group training.',
+      'Research inter-swing variability and bat-path modeling with Python, R, and SQL.',
     ],
   },
-  // Add earlier roles here, newest first.
+  {
+    org: 'Wild Bill Sports',
+    title: 'Youth Baseball Coach',
+    start: 'Fall 2024',
+    end: 'Summer 2025',
+    blurb: 'Coached a 13u team while enrolled full-time at Catholic University.',
+    points: [
+      'Led biweekly practices and coached weekend tournaments for a 13u team, balancing a full course load.',
+      'Managed pre-game organization, communication, and logistics.',
+    ],
+  },
+  {
+    org: 'Ascent Athlete',
+    title: 'Hitting Intern',
+    start: 'Winter 2023',
+    location: 'Glen Mills, PA',
+    blurb: 'Hands-on, data-driven work with hitters at every level.',
+    points: [
+      'Trained professional, college, high school, and youth hitters in a hands-on, data-driven environment.',
+      'Built a more streamlined process for entering athlete KPI data into the facility database.',
+      'Maintained pitching machines, L-screens, and cages to keep open hours running.',
+    ],
+  },
 ];
 
 export const education: Entry[] = [
-  // { primary: 'Degree, Field', secondary: 'Institution', meta: 'Year' },
+  {
+    primary: 'B.S. Biomedical Engineering',
+    secondary: 'The Catholic University of America',
+    meta: 'May 2025 · GPA 3.8, Dean’s List (5 semesters)',
+  },
+  {
+    primary: 'Leadership and Public Management Certificate',
+    secondary: 'University of Connecticut',
+    meta: 'May 2026',
+  },
 ];
 
 export const skills: { group: string; items: string[] }[] = [
@@ -57,6 +89,7 @@ export const skills: { group: string; items: string[] }[] = [
     items: [
       'Hitting assessment and program design',
       'Constraint-led practice design',
+      'One-on-one and group instruction',
       'Video analysis and athlete-facing communication',
     ],
   },
@@ -64,10 +97,45 @@ export const skills: { group: string; items: string[] }[] = [
     group: 'Technical',
     items: [
       'Python (pandas, numpy, scipy, scikit-learn)',
+      'R',
       'SQL',
-      'Biomechanics: markerless motion capture, bat tracking, force plates',
-      'Physics simulation (MuJoCo), video pipelines (ffmpeg)',
+      'MATLAB',
+      'Biomechanics instrumentation (bat tracking, motion capture, force plates)',
+      'Pitching machine repair',
     ],
+  },
+];
+
+export const certifications: Entry[] = [
+  { primary: 'Foundations of Hitting', secondary: 'Driveline' },
+  { primary: 'Youth Coaching', secondary: 'Driveline' },
+  { primary: 'AI Fluency', secondary: 'Anthropic' },
+];
+
+export const athletics: Role[] = [
+  {
+    org: 'University of Connecticut',
+    title: 'Varsity Baseball Athlete',
+    start: 'Fall 2025',
+    end: 'Spring 2026',
+  },
+  {
+    org: 'The Catholic University of America',
+    title: 'Varsity Baseball Athlete',
+    start: 'Fall 2022',
+    end: 'Spring 2025',
+    points: [
+      'All-Landmark Conference Second Team (2024, 2025)',
+      'ABCA/D3Baseball.com Third Team All-Region (2025)',
+      'Landmark Conference Academic Honor Roll (2023, 2024, 2025)',
+      'Started every contest in 2024 despite multiple injuries.',
+    ],
+  },
+  {
+    org: 'Tau Beta Pi Engineering Honors Society',
+    title: 'Active Member',
+    start: 'Fall 2023',
+    end: 'Present',
   },
 ];
 
