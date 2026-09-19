@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Biomech Lab</title>
+    <meta
+      name="description"
+      content="Explore a captured swing. Learn how full-signal bat and body tracking connects movement, timing, and measurement."
+    />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="assets/brand.css" />
+    <link rel="stylesheet" href="styles.css?v=20260916-20" />
+  </head>
+  <body>
+    <a class="skip-link" href="#exhibit">Skip to the swing</a>
+    <header class="masthead">
+      <span
+        >Biomech Lab <span class="divider">/</span> Coach education</span
+      ><button id="about" class="quiet">About the data</button
+      ><button id="share" class="quiet">Copy this view</button>
+    </header>
+    <main>
+      <h1 class="sr-only">Biomech Lab</h1>
+      <div id="status" role="status">Loading the swing exhibit…</div>
+      <section
+        id="exhibit"
+        class="exhibit"
+        aria-label="Interactive swing exhibit"
+        hidden
+      >
+        <div class="exhibit-heading">
+          <p class="eyebrow">
+            01 <span class="divider">/</span> The swing exhibit
+          </p>
+          <span id="cohort-short"></span>
+        </div>
+        <nav
+          id="phases"
+          class="phases"
+          aria-label="Swing positions and phases"
+        ></nav>
+        <div class="workspace">
+          <div class="stage-column">
+            <div class="stage" id="stage">
+              <canvas
+                id="canvas"
+                aria-label="Captured-motion swing model. Use camera buttons or drag to orbit."
+              ></canvas
+              ><canvas id="overlay" aria-hidden="true"></canvas>
+              <div id="landmarks" class="landmarks"></div>
+              <div class="stage-top">
+                <span id="scene-phase"></span><span id="scene-time"></span>
+              </div>
+              <div id="path-key" class="path-key"></div>
+              <p class="scene-help">
+                Drag to orbit · scroll to zoom · illustrative pitch flight
+              </p>
+              <div id="scene-error" role="status" hidden></div>
+            </div>
+            <div class="transport">
+              <button id="play" class="primary" aria-label="Play swing">
+                Play</button
+              ><button id="back-frame" class="icon" aria-label="Previous frame">
+                −1</button
+              ><button id="next-frame" class="icon" aria-label="Next frame">
+                +1</button
+              ><label class="sr-only" for="scrub">Swing time</label
+              ><input
+                id="scrub"
+                type="range"
+                min="0"
+                max="430"
+                value="0"
+              /><output id="clock" for="scrub" aria-live="off"></output
+              ><label class="select-label"
+                >Speed<select id="speed">
+                  <option value="0.25">¼×</option>
+                  <option value="0.5" selected>½×</option>
+                  <option value="1">1×</option>
+                </select></label
+              ><label class="check"
+                ><input id="loop" type="checkbox" />Loop phase</label
+              >
+            </div>
+            <div class="view-controls">
+              <div class="camera-controls" role="group" aria-label="Camera">
+                <button data-view="catcher" aria-pressed="true">Oblique</button
+                ><button data-view="side" aria-pressed="false">Side</button
+                ><button data-view="top" aria-pressed="false">Top</button
+                ><button id="reset">Reset view</button>
+              </div>
+              <details class="display">
+                <summary>Display layers</summary>
+                <div id="layers">
+                  <label
+                    ><input
+                      type="checkbox"
+                      data-layer="body"
+                      checked
+                    />Body</label
+                  ><label
+                    ><input type="checkbox" data-layer="path" checked />Bat
+                    path</label
+                  ><label
+                    ><input
+                      type="checkbox"
+                      data-layer="ground"
+                      checked
+                    />Ground</label
+                  ><label
+                    ><input type="checkbox" data-layer="plane" />Swing
+                    plane</label
+                  ><label
+                    ><input type="checkbox" data-layer="zone" />Illustrative
+                    zone</label
+                  ><label
+                    ><input type="checkbox" id="annotations" />Body
+                    landmarks</label
+                  >
+                </div>
+              </details>
+            </div>
+          </div>
+          <aside class="teaching" aria-label="Teaching notes">
+            <div class="measurement">
+              <p class="eyebrow">Selected measurement</p>
+              <label class="sr-only" for="metric-select"
+                >Select measurement</label
+              ><select id="metric-select"></select>
+              <div id="metric-detail"></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+      <section id="signals-section" class="signals-section" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Full-signal tracking</p>
+
+            <p>Scrub the curve to move the swing.</p>
+          </div>
+          <div class="signal-options">
+            <label class="select-label"
+              >Time window<select id="range">
+                <option value="load">Load through contact</option>
+                <option value="report">Downswing · −160…+30 ms</option>
+                <option value="full">Full swing · auto scale</option>
+                <option value="phase">Selected phase / position</option>
+              </select></label
+            ><label class="check"
+              ><input id="bands" type="checkbox" />Cohort reference band</label
+            >
+          </div>
+        </div>
+
+        <div class="chart-legend">
+          <span>— Cohort mean</span><span>┊ Current frame</span
+          ><span>★ Measurement moment</span><span>Contact = 0 ms</span>
+        </div>
+        <div id="charts"></div>
+        <div id="measurement-moments"></div>
+        <div id="overview-wrap" hidden>
+          <p class="small-label">
+            Full-swing context · select a time to move the exhibit
+          </p>
+          <svg
+            id="overview"
+            viewBox="0 0 1000 58"
+            role="img"
+            aria-label="Full-swing time overview"
+          ></svg>
+        </div>
+      </section>
+      <section class="method-section">
+        <p class="eyebrow">
+          03 <span class="divider">/</span> About this specimen
+        </p>
+        <div class="method-grid">
+          <div>
+            <h2>An average of captured swings</h2>
+            <p id="cohort-note">
+              This exhibit uses aggregate motion-capture data.
+            </p>
+          </div>
+          <div>
+            <h3>Where the curves come from</h3>
+            <p>
+              Body curves use the lab’s measurements. Bat curves are calculated
+              from motion capture, one swing at a time, then averaged.
+              The skeleton and arrows show average positions. An angle drawn
+              on that skeleton can differ from the average of the measured
+              angles. Averaging also smooths timing differences between hitters.
+            </p>
+          </div>
+          <div>
+            <h3>What a curve can tell you</h3>
+            <p>
+              Use the curves to compare positions and the timing of movement.
+              Force and energy transfer require additional measurements.
+              Sensor scores summarize parts of a swing; a continuous curve
+              shows how a measurement changes over time.
+            </p>
+          </div>
+        </div>
+        <p class="source">
+          Teaching sequence adapted from
+          <cite>Hacking the Kinetic Chain: Hitting Biomechanics</cite>.
+          Measurement context draws on the Driveline Blast Motion metric
+          definitions. The catalog identifies each signal’s lab channel or
+          reconstruction method. The strike zone and swing plane are visual
+          references. Surface color runs from the selected signal’s lowest
+          value (blue), through the midpoint (green), to highest (red); gray marks missing samples. These
+          colors show values, not performance grades. The green ground trace
+          follows center of mass. Center of pressure is a separate measurement.
+        </p>
+      </section>
+      <footer>
+        <span>Biomech Lab · Coach education</span
+        ><span>Explore the swing and its measurements</span>
+      </footer>
+    </main>
+    <div id="notice" role="status" class="notice" hidden></div>
+    <noscript
+      >This interactive exhibit requires JavaScript to display the swing and its
+      measurements.</noscript
+    >
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./vendor/three.module.js",
+          "three/addons/": "./vendor/addons/"
+        }
+      }
+    </script>
+    <script type="module" src="src/app.js?v=20260916-20"></script>
+  </body>
+</html>

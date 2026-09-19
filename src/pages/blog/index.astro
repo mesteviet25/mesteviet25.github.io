@@ -1,0 +1,38 @@
+---
+import Base from '../../layouts/Base.astro';
+import IndexList from '../../components/IndexList.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog'))
+  .filter((n) => !n.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<Base title="Blog — Stevie Thomas" description="Writing on hitting, swing data, coaching, and whatever else is holding my attention.">
+  <section style="padding: clamp(2.5rem, 7vw, 4.5rem) 0 0;">
+    <p class="eyebrow reveal" style="--i:0">Index</p>
+    <h1 class="reveal" style="--i:1">Blog</h1>
+  </section>
+
+  <section style="margin-top: clamp(2.5rem, 7vw, 4rem);">
+    {
+      posts.length > 0 ? (
+        <IndexList
+          items={posts.map((n) => ({
+            href: `/blog/${n.id}/`,
+            title: n.data.title,
+            summary: n.data.summary,
+            meta: n.data.date.toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              timeZone: 'UTC',
+            }),
+          }))}
+        />
+      ) : (
+        <p style="color: var(--muted);">Nothing published yet.</p>
+      )
+    }
+  </section>
+</Base>
