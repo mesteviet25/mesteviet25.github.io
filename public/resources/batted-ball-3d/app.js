@@ -23,9 +23,6 @@ const FADE_N = 25;
 const SLICE_HALF = 2;
 const SLICE_SP = [-50, 50];
 const SLICE_LA = [-50, 80];
-// Share of a band's balls that must sit in cells clearing Min BIP before the slice stops coarsening.
-const SLICE_COVERAGE = 0.6;
-const DEG_SIGN = String.fromCharCode(176);
 
 const state = { metric: 'hit', pool: 1 };
 let base = null;   // all.json: {ev, la, sp, n, hits, woba} + index: Map key -> row
@@ -239,24 +236,7 @@ function drawSlice() {
     const j = y * SW + x;
     n[j] += base.n[i]; hits[j] += base.hits[i]; woba[j] += base.woba[i];
   }
-  // Adaptive cells: use the smallest square cell (1-10 deg) at which most of the band's balls sit in cells that
-  // clear Min BIP. Dense bands stay at 1 deg; the sparse top end (116+ mph) coarsens instead of going blank.
-  const minN = val('minN');
-  let total = 0;
-  for (let j = 0; j < n.length; j++) total += n[j];
-  for (const c of [1, 2, 3, 4, 5, 6, 8, 10]) {
-    const BW = Math.ceil(SW / c), BH = Math.ceil(SH / c);
-    const bn = new Float64Array(BW * BH), bh = new Float64Array(BW * BH), bw = new Float64Array(BW * BH);
-    for (let y = 0; y < SH; y++) for (let x = 0; x < SW; x++) {
-      const j = y * SW + x, b = Math.floor(y / c) * BW + Math.floor(x / c);
-      bn[b] += n[j]; bh[b] += hits[j]; bw[b] += woba[j];
-    }
-    let covered = 0;
-    for (let b = 0; b < bn.length; b++) if (bn[b] >= minN) covered += bn[b];
-    slice = { n: bn, hits: bh, woba: bw, c, BW, BH };
-    if (covered >= SLICE_COVERAGE * total) break;
-  }
-  $('sliceCell').textContent = slice.c > 1 ? ` (${slice.c}${DEG_SIGN} cells)` : '';
+  slice = { n, hits, woba };
 
   const dpr = window.devicePixelRatio;
   const w = sliceCv.clientWidth, h = sliceCv.clientHeight;
@@ -267,14 +247,13 @@ function drawSlice() {
   const pw = w - PAD.l - PAD.r, ph = h - PAD.t - PAD.b;
   const cw = pw / SW, ch = ph / SH;
   const mt = METRICS[state.metric];
-  const { c, BW, BH } = slice;
-  const num = state.metric === 'hit' ? slice.hits : slice.woba;
-  for (let by = 0; by < BH; by++) for (let bx = 0; bx < BW; bx++) {
-    const b = by * BW + bx;
-    if (slice.n[b] < minN || slice.n[b] === 0) continue;
-    const x0 = bx * c, x1 = Math.min(SW, x0 + c), y0 = by * c, y1 = Math.min(SH, y0 + c);
-    ctx.fillStyle = lutCss[Math.min(255, Math.round(num[b] / slice.n[b] / mt.max * 255))];
-    ctx.fillRect(PAD.l + x0 * cw, PAD.t + (SH - y1) * ch, Math.ceil((x1 - x0) * cw), Math.ceil((y1 - y0) * ch));
+  const num = state.metric === 'hit' ? hits : woba;
+  const minN = val('minN');
+  for (let y = 0; y < SH; y++) for (let x = 0; x < SW; x++) {
+    const j = y * SW + x;
+    if (n[j] < minN || n[j] === 0) continue;
+    ctx.fillStyle = lutCss[Math.min(255, Math.round(num[j] / n[j] / mt.max * 255))];
+    ctx.fillRect(PAD.l + x * cw, PAD.t + (SH - 1 - y) * ch, Math.ceil(cw), Math.ceil(ch));
   }
   // Axes: LA gridlines every 20 deg, foul lines at +/-45, CF at 0.
   ctx.strokeStyle = 'rgba(230,232,235,0.18)';
@@ -308,16 +287,12 @@ sliceCv.addEventListener('pointermove', (e) => {
   const x = Math.floor((e.clientX - rect.left - PAD.l) / pw * SW);
   const y = SH - 1 - Math.floor((e.clientY - rect.top - PAD.t) / ph * SH);
   const tip = $('tip');
-  if (x < 0 || x >= SW || y < 0 || y >= SH) { tip.style.display = 'none'; return; }
-  const { c, BW } = slice;
-  const j = Math.floor(y / c) * BW + Math.floor(x / c), n = slice.n[j];
-  if (n < val('minN') || n === 0) { tip.style.display = 'none'; return; }
-  // Cell range in degrees; a 1-deg cell shows a single value.
-  const range = (v0, lim) => (c === 1 ? `${v0}` : `${v0} to ${Math.min(v0 + c, lim) - 1}`);
-  const sp0 = Math.floor(x / c) * c + SLICE_SP[0], la0 = Math.floor(y / c) * c + SLICE_LA[0];
+  if (x < 0 || x >= SW || y < 0 || y >= SH || slice.n[y * SW + x] === 0) { tip.style.display = 'none'; return; }
+  const j = y * SW + x, n = slice.n[j];
+  const sp = x + SLICE_SP[0], la = y + SLICE_LA[0];
   tip.innerHTML =
-    `${$('sliceTitle').textContent} &middot; LA <b>${range(la0, SLICE_LA[1])}${DEG_SIGN}</b> &middot; ` +
-    `spray <b>${range(sp0, SLICE_SP[1])}${DEG_SIGN}</b> (${sp0 + c / 2 >= 0 ? 'oppo' : 'pull'})<br>BIP ${n}<br>` +
+    `${$('sliceTitle').textContent} &middot; LA <b>${la}\u00b0</b> &middot; ` +
+    `spray <b>${sp}\u00b0</b> (${sp >= 0 ? 'oppo' : 'pull'})<br>BIP ${n}<br>` +
     `Hit prob <b>${(slice.hits[j] / n * 100).toFixed(1)}%</b> &middot; ` +
     `wOBAcon <b>${(slice.woba[j] / n).toFixed(3).replace(/^0/, '')}</b>`;
   tip.style.display = 'block';
