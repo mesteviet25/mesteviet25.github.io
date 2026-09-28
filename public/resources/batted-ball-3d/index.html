@@ -13,7 +13,12 @@
     font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
   #app { position: relative; display: grid; grid-template-columns: 290px 1fr; height: 100%; }
   aside { background: var(--panel); border-right: 1px solid var(--line); padding: 16px; overflow-y: auto; }
-  h1 { font-size: 16px; margin: 0 0 10px; }
+  h1 { font-size: 16px; margin: 0 0 6px; }
+  .intro { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 0 0 12px; }
+  .disclaimer { margin: 6px 0 8px; padding: 8px 10px; font-size: 12px; line-height: 1.5; color: var(--text);
+    background: rgba(255,163,0,.08); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0; }
+  .disclaimer b { color: var(--accent); }
+  .source { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
   fieldset { border: 0; border-top: 1px solid var(--line); margin: 0; padding: 10px 0; }
   legend { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; padding: 0 0 6px; }
   .seg { display: flex; gap: 4px; flex-wrap: wrap; }
@@ -72,6 +77,9 @@
 <div id="app">
   <aside>
     <h1>Batted Ball Space</h1>
+    <p class="intro">Every MLB ball in play, 2015-2026. A point's direction from the center is its launch angle
+      and spray angle; its distance from the center is exit velo. Color shows how often that contact became a
+      hit, or its wOBA on contact (wOBAcon). The slice panel flattens one exit velo band into a map.</p>
 
     <fieldset><legend>Metric</legend>
       <div class="seg" id="metric">
@@ -93,6 +101,11 @@
       <div class="row"><label>Spray max</label><input type="range" id="spMax" min="-60" max="60" value="50"><output></output></div>
       <div class="row"><label>Min BIP</label><input type="range" id="minN" min="1" max="50" value="5"><output></output></div>
     </fieldset>
+
+    <p class="disclaimer"><b>Spray angle is normalized.</b> Left-handed hitters are mirrored, so pull is always
+      negative (left of center) and every hitter is shown as if right-handed.</p>
+    <p class="source">MLB Statcast, regular season. Each bin is pooled with its neighbors; Statcast's placeholder
+      values for untracked balls are excluded.</p>
   </aside>
   <main id="stage">
     <div id="legend"><div class="title" id="legTitle"></div><div class="bar" id="legBar"></div><div class="ticks" id="legTicks"></div></div>
@@ -100,7 +113,7 @@
   </main>
   <div id="slice">
     <span class="label">Exit velo slice</span>
-    <input type="range" id="sliceEv" min="50" max="125" value="100" aria-label="Exit velo slice">
+    <input type="range" id="sliceEv" min="50" max="120" value="100" aria-label="Exit velo slice">
     <output id="sliceTitle"></output>
     <canvas id="sliceCv"></canvas>
   </div>
