@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Batted Ball Space</title>
+<style>
+  :root {
+    --bg: #0f1114; --panel: #171a1f; --line: #2a2f37; --text: #e6e8eb; --muted: #8b939e; --accent: #ffa300;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #app { position: relative; display: grid; grid-template-columns: 290px 1fr; height: 100%; }
+  aside { background: var(--panel); border-right: 1px solid var(--line); padding: 16px; overflow-y: auto; }
+  h1 { font-size: 16px; margin: 0 0 10px; }
+  fieldset { border: 0; border-top: 1px solid var(--line); margin: 0; padding: 10px 0; }
+  legend { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; padding: 0 0 6px; }
+  .seg { display: flex; gap: 4px; flex-wrap: wrap; }
+  .seg button { background: transparent; color: var(--text); border: 1px solid var(--line); border-radius: 4px;
+    padding: 4px 8px; font: inherit; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #111; }
+  .row { display: grid; grid-template-columns: 58px 1fr 40px; align-items: center; gap: 6px; margin: 4px 0; }
+  .row label { color: var(--muted); }
+  .row output { text-align: right; font-variant-numeric: tabular-nums; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  main { position: relative; overflow: hidden; }
+  canvas { display: block; }
+  #legend { position: absolute; right: 16px; top: 16px; background: rgba(23,26,31,.85); border: 1px solid var(--line);
+    border-radius: 6px; padding: 8px 10px; }
+  #legend .title { font-weight: 600; margin-bottom: 6px; }
+  #legend .bar { width: 160px; height: 10px; border-radius: 2px; }
+  #legend .ticks { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; margin-top: 2px; }
+
+  /* 2D slice panel: floats over the 3D view on desktop, stacks under it on phones. */
+  #slice { position: absolute; left: calc(290px + 16px); bottom: 16px; width: 356px; background: rgba(23,26,31,.94);
+    border: 1px solid var(--accent); border-radius: 8px; padding: 10px 12px 8px;
+    display: flex; flex-wrap: wrap; align-items: baseline; }
+  #slice .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+  #sliceTitle { margin-left: auto; color: var(--accent); font-size: 22px; font-weight: 700;
+    font-variant-numeric: tabular-nums; }
+  #sliceEv { order: 2; width: 100%; margin: 8px 0 6px; height: 28px; -webkit-appearance: none; appearance: none;
+    background: transparent; cursor: pointer; touch-action: none; }
+  #sliceEv::-webkit-slider-runnable-track { height: 8px; border-radius: 4px; background: #3a414b; }
+  #sliceEv::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -9px;
+    border-radius: 50%; background: var(--accent); border: 3px solid #111; }
+  #sliceEv::-moz-range-track { height: 8px; border-radius: 4px; background: #3a414b; }
+  #sliceEv::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--accent);
+    border: 3px solid #111; }
+  #sliceCv { order: 3; width: 330px; height: 300px; }
+
+  #tip { position: fixed; pointer-events: none; z-index: 10; background: rgba(23,26,31,.95); border: 1px solid var(--line);
+    border-radius: 6px; padding: 8px 10px; font-variant-numeric: tabular-nums; white-space: nowrap; display: none; }
+  #tip b { color: var(--accent); }
+  #loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); pointer-events: none; }
+
+  @media (max-width: 760px) {
+    html, body { height: auto; }
+    #app { grid-template-columns: 1fr; grid-template-rows: 62vh auto auto; height: auto; }
+    main { grid-row: 1; }
+    #slice { grid-row: 2; position: static; width: auto; margin: 12px 16px 0; }
+    #sliceCv { width: 100%; height: 280px; }
+    aside { grid-row: 3; border-right: 0; margin-top: 12px; }
+    #legend { top: 10px; right: 10px; padding: 6px 8px; }
+    #legend .bar { width: 120px; }
+    .row { grid-template-columns: 70px 1fr 44px; margin: 10px 0; }
+    input[type=range] { height: 28px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <aside>
+    <h1>Batted Ball Space</h1>
+
+    <fieldset><legend>Metric</legend>
+      <div class="seg" id="metric">
+        <button data-v="hit" aria-pressed="true">Hit probability</button>
+        <button data-v="woba" aria-pressed="false">wOBAcon</button>
+      </div>
+    </fieldset>
+
+    <fieldset><legend>Highlight</legend>
+      <div class="row"><label>Show &ge;</label><input type="range" id="thresh" min="0" max="100" value="50"><output></output></div>
+    </fieldset>
+
+    <fieldset><legend>Filter</legend>
+      <div class="row"><label>EV min</label><input type="range" id="evMin" min="0" max="125" value="0"><output></output></div>
+      <div class="row"><label>EV max</label><input type="range" id="evMax" min="0" max="125" value="125"><output></output></div>
+      <div class="row"><label>LA min</label><input type="range" id="laMin" min="-90" max="90" value="-90"><output></output></div>
+      <div class="row"><label>LA max</label><input type="range" id="laMax" min="-90" max="90" value="90"><output></output></div>
+      <div class="row"><label>Spray min</label><input type="range" id="spMin" min="-60" max="60" value="-50"><output></output></div>
+      <div class="row"><label>Spray max</label><input type="range" id="spMax" min="-60" max="60" value="50"><output></output></div>
+      <div class="row"><label>Min BIP</label><input type="range" id="minN" min="1" max="50" value="5"><output></output></div>
+    </fieldset>
+  </aside>
+  <main id="stage">
+    <div id="legend"><div class="title" id="legTitle"></div><div class="bar" id="legBar"></div><div class="ticks" id="legTicks"></div></div>
+    <div id="loading">Loading...</div>
+  </main>
+  <div id="slice">
+    <span class="label">Exit velo slice</span>
+    <input type="range" id="sliceEv" min="50" max="125" value="100" aria-label="Exit velo slice">
+    <output id="sliceTitle"></output>
+    <canvas id="sliceCv"></canvas>
+  </div>
+  <div id="tip"></div>
+</div>
+<script type="importmap">
+  { "imports": { "three": "./vendor/three.module.js", "three/addons/": "./vendor/addons/" } }
+</script>
+<script type="module" src="app.js"></script>
+</body>
+</html>

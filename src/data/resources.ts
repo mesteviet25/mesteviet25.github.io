@@ -21,4 +21,15 @@ export const resources: Resource[] = [
     tags: ['Biomechanics', 'Bat path', 'Full-signal tracking'],
     preview: '/images/biomech-lab-preview.jpg',
   },
+  {
+    slug: 'batted-ball-3d',
+    href: '/resources/batted-ball-3d/',
+    title: 'Batted Ball Space',
+    summary:
+      'Every MLB ball in play from 2015-2026 placed in 3D by exit velo, launch angle, and spray direction, colored by hit probability or wOBAcon. Drag the exit velo slice to see where hits live at each speed, and why pulled fly balls pay.',
+    kind: 'Interactive 3D chart',
+    audience: 'Hitters and analysts',
+    tags: ['Statcast', 'Batted balls', 'Pull air'],
+    preview: '/images/batted-ball-3d-preview.jpg',
+  },
 ];
