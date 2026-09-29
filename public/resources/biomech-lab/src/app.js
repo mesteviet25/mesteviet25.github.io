@@ -1,4 +1,4 @@
-import { buildSignalPlot } from "./plot.js?v=20260916-20";
+import { buildSignalPlot } from "./plot.js?v=20260929-3";
 import {
   catalog,
   views,
@@ -7,7 +7,7 @@ import {
   regions,
   metricAliases,
   summaries,
-} from "./catalog.js?v=20260916-20";
+} from "./catalog.js?v=20260929-3";
 import {
   clamp,
   eventTime,
@@ -17,7 +17,7 @@ import {
   chartRange,
   advanceTime,
   validateData,
-} from "./model.js?v=20260916-20";
+} from "./model.js?v=20260929-3";
 const $ = (id) => document.getElementById(id);
 const NS = "http://www.w3.org/2000/svg";
 const svgNode = (tag, attrs = {}, text = "") => {
@@ -58,7 +58,7 @@ about.append(close, document.querySelector(".method-section"));
 document.body.append(about);
 $("about").addEventListener("click", () => about.showModal());
 async function init() {
-  const response = await fetch("./data/averageSwing.json?v=20260916-20");
+  const response = await fetch("./data/averageSwing.json?v=20260929-3");
   if (!response.ok)
     throw new Error(
       "The aggregate dataset could not be loaded. Reload the page to try again.",
@@ -138,7 +138,7 @@ async function init() {
   $("exhibit").hidden = false;
   $("signals-section").hidden = false;
   try {
-    const { SwingScene } = await import("./scene.js?v=20260916-20");
+    const { SwingScene } = await import("./scene.js?v=20260929-3");
     scene = new SwingScene($("canvas"), $("overlay")).load(data);
     scene.setView(state.camera);
     scene.resize();

@@ -3,3 +3,7 @@ dist/
 .astro/
 .DS_Store
 *.log
+
+# Unpublished drafts, parked on purpose. See drafts/README.md - two of the three
+# groups will not validate against the current content schema.
+drafts/

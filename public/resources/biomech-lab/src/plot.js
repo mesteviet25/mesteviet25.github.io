@@ -1,6 +1,6 @@
 import { indexAt, eventTime } from "./model.js";
-import { seriesColors, bandColor } from "./palette.js?v=20260916-20";
-import { signalScale } from "./chart-scales.js?v=20260916-20";
+import { seriesColors, bandColor } from "./palette.js?v=20260929-3";
+import { signalScale } from "./chart-scales.js?v=20260929-3";
 const NS = "http://www.w3.org/2000/svg";
 const node = (tag, attrs = {}, text = "") => {
   const n = document.createElementNS(NS, tag);

@@ -1,5 +1,5 @@
-import { ballPosition } from "./flight.js?v=20260916-20";
-import { seriesColors, sequencingSegments } from "./palette.js?v=20260916-20";
+import { ballPosition } from "./flight.js?v=20260929-3";
+import { seriesColors, sequencingSegments } from "./palette.js?v=20260929-3";
 /**
  * The 3D stage: the averaged bat and the averaged body, on one clock.
  *

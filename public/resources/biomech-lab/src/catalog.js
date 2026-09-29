@@ -1,4 +1,4 @@
-import { teachingNotes } from "./teaching-notes.js?v=20260916-20";
+import { teachingNotes } from "./teaching-notes.js?v=20260929-3";
 // Versioned educational catalog. Channel conventions follow the lab report mapping.
 export const catalogVersion = 7;
 const bat = (id, name, unit, definition, read, anchor, events = []) => ({
