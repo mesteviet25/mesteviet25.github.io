@@ -11,6 +11,17 @@ export interface Resource {
 
 export const resources: Resource[] = [
   {
+    slug: 'collision-lab',
+    href: '/resources/collision-lab/',
+    title: 'Collision Lab',
+    summary:
+      'Set the pitch (speed, VAA, HAA, spin), the swing (bat speed, attack angle, attack direction, tilt), and where the bat meets the ball. A physics model collides them and flies the result: exit velo, launch angle, spray, backspin and sidespin, and carry, compared across smash factors.',
+    kind: 'Interactive physics simulation',
+    audience: 'Hitters and coaches',
+    tags: ['Bat-ball collision', 'Smash factor', 'Batted-ball spin'],
+    preview: '/images/collision-lab-preview.jpg',
+  },
+  {
     slug: 'biomech-lab',
     href: '/resources/biomech-lab/',
     title: 'Biomech Lab',
