@@ -43,11 +43,8 @@ without edits. `public/blast-bat-path/` is a shim that forwards the old shared U
 
 ## The Collision Lab tool
 
-`public/resources/collision-lab/` is hand-written source, edited in place (no build step).
-`physics.js` holds the collision + flight model with no DOM, so node can import it for checks;
-`app.js` is the three.js page. It loads three.js from `../batted-ball-3d/vendor/`, so keep that
-folder. After editing, re-stamp the cache busters: `physics.js?v=` in `app.js` and `app.js?v=` in
-`index.html` (first 10 chars of each file's md5, physics first).
+Unpublished (2026-10-25): parked in `drafts/collision-lab/`, which is gitignored. See
+`CLAUDE.md` before republishing.
 
 ## Run it locally
 

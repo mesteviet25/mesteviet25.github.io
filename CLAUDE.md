@@ -37,10 +37,13 @@ That folder is a build product of the separate `blast-bat-path` repo. Do not edi
 `node scripts/deploy_to_site.mjs` in `../../biomech-lab/blast-bat-path/`, then commit the copy here.
 </important>
 
-<important if="editing public/resources/collision-lab/">
-Hand-written, no build step. After an edit, re-stamp the cache busters: `physics.js?v=` in
-`app.js` and `app.js?v=` in `index.html`, each the first 10 chars of that file's md5, physics
-first. It loads three.js from `../batted-ball-3d/vendor/`, so keep that folder.
+<important if="working on the Collision Lab (drafts/collision-lab/)">
+Unpublished since 2026-10-25 (owner: not ready to be public). Lives in gitignored `drafts/`.
+Hand-written, no build step; it loads three.js from `../batted-ball-3d/vendor/`, so publishing
+means moving it back to `public/resources/collision-lab/`, its preview to `public/images/`, and
+restoring its `src/data/resources.ts` entry (in git at f8eda90) -- only when the owner asks.
+Re-stamp the cache busters on publish: `physics.js?v=` in `app.js`, `app.js?v=` in
+`index.html`, first 10 chars of each file's md5, physics first.
 </important>
 
 <important if="the live site starts serving raw markdown">
