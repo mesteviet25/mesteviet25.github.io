@@ -12,7 +12,7 @@ draft: true
 
 ## Abstract
 
-[3Blue1Brown's series on compression](https://www.3blue1brown.com/lessons/entropy/) lined up with a lot of what I've been reading in motor learning and seeing in swing-to-swing variability. This post covers where information theory already shows up in motor control, how cross-entropy maps onto practice design, why chunking explains automaticity, and why a good swing is closer to lossy compression than lossless. I then connect that to the uncontrolled manifold, argue that compression reconciles the information processing and ecological views of motor learning, and lay out what I'd measure. Every figure is a schematic drawn from the equations or a toy model, and none of them are athlete data.
+[3Blue1Brown's series on compression](https://www.3blue1brown.com/lessons/entropy/) got me thinking about a lot of what I've been reading in motor learning and seeing in swing-to-swing variability. This post covers where information theory already shows up in motor control, how cross-entropy maps onto practice design, why chunking explains automaticity, and why a good swing is closer to lossy compression than lossless. I then connect that to the uncontrolled manifold, argue that compression reconciles the information processing and ecological views of motor learning, and lay out what I'd measure. Every figure is a schematic drawn from the equations or a toy model, and none of them are athlete data.
 
 ## 1. Introduction
 
