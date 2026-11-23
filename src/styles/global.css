@@ -624,3 +624,32 @@ h3 {
     max-width: 15rem;
   }
 }
+
+/* Paper-style posts: numbered figures and display equations. */
+.prose figure {
+  margin: 2.2rem 0;
+}
+
+.prose figure img {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+}
+
+.prose figcaption {
+  margin-top: 0.6rem;
+  font-size: 0.88em;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.prose mjx-container[display='true'] {
+  display: block;
+  margin: 1.4rem 0;
+  max-width: 100%;
+  /* MathJax sets an inline min-width on tagged equations; let narrow screens scroll instead. */
+  min-width: 0 !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
