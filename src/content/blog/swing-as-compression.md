@@ -1,6 +1,6 @@
 ---
 title: 'Thinking About the Swing as a Compression Problem'
-summary: 'A working paper on whether the math behind data compression (entropy, cross-entropy and rate-distortion) is a useful way to describe what happens when a hitter learns.'
+summary: 'A working paper on whether the math behind data compression is a useful way to describe how a hitter learns.'
 date: 2026-11-23
 tags: ['hitting', 'motor learning', 'information theory']
 draft: true
@@ -12,23 +12,23 @@ draft: true
 
 ## Abstract
 
-I went down a rabbit hole on data compression and came out thinking it lines up with a lot of what I've been reading in motor learning and what I've been looking at in swing-to-swing variability. This post is me trying to work through that. I walk through where information theory already shows up in motor control (Fitts's and Hick's laws), why "compression is prediction" maps onto practice design, why chunking is a reasonable explanation for automaticity, and why the right comparison for a good swing is lossy compression (rate-distortion) instead of lossless. Then I try to connect that to the uncontrolled manifold work, which I think is the closest real mathematical overlap, argue that compression is a way of reconciling the information processing and ecological views of motor learning, and lay out what I'd want to measure. Every figure in here is a schematic drawn from the equations or from a toy model, and none of them are athlete data.
+3Blue1Brown's series on compression lined up with a lot of what I've been reading in motor learning and seeing in swing-to-swing variability. This post covers where information theory already shows up in motor control, how cross-entropy maps onto practice design, why chunking explains automaticity, and why a good swing is closer to lossy compression than lossless. I then connect that to the uncontrolled manifold, argue that compression reconciles the information processing and ecological views of motor learning, and lay out what I'd measure. Every figure is a schematic drawn from the equations or a toy model, and none of them are athlete data.
 
 ## 1. Introduction
 
-Where this started was watching 3Blue1Brown's mini-series on compression on YouTube [1, 2]. The first video rebuilds entropy from scratch and the second one is about cross-entropy, which is basically the question of what it costs you to compress something when your model of it is wrong. The idea that stuck with me from the series is that in order to compress something really well you have to be able to predict it really well, because if you already know what's coming next you barely have to write it down.
+This started with 3Blue1Brown's mini-series on compression [1, 2]. The idea that stuck with me is that compressing something well requires predicting it well, because if you know what's coming next you barely have to write it down.
 
-I've recently been exploring motor learning and ecological dynamics, and spending a lot of my time looking at how much hitters vary from swing to swing, and the more I watched the more it sounded like what I was already thinking about. So this is me trying to work through whether that's actually a useful way to describe how hitters learn, or whether I just think it's cool.
+I've recently been exploring motor learning and ecological dynamics, along with how much hitters vary from swing to swing, and the series sounded like what I was already thinking about. This is me working through whether it's a useful way to describe how hitters learn.
 
 ## 2. Movement was being measured in bits a long time ago
 
-The first thing I found out is that this isn't a new idea at all. Shannon defined the information in an event with probability $p$ as $-\log_2 p$ bits, and the entropy of a source as the average of that [3]:
+This isn't a new idea. Shannon defined the information in an event with probability $p$ as $-\log_2 p$ bits, and entropy as the average of that [3]:
 
 $$
 H(X) = -\sum_x p(x)\,\log_2 p(x) \tag{1}
 $$
 
-Within a few years motor control people were already using it. Hick showed that reaction time goes up linearly with the information in the choice you're making [4], and Fitts showed that movement time goes up linearly with an "index of difficulty" that is also in bits [5]:
+Hick showed that reaction time rises linearly with the information in a choice [4], and Fitts showed that movement time rises linearly with an index of difficulty that is also in bits [5]:
 
 $$
 RT = a + b\,\log_2(n + 1) \tag{2}
@@ -38,98 +38,98 @@ $$
 MT = a + b\,\log_2\!\left(\frac{2D}{W}\right) \tag{3}
 $$
 
-where $n$ is the number of equally likely options, $D$ is the distance to the target and $W$ is how wide the target is. Fitts was explicitly treating the arm like a communication channel with a limited capacity, which is where the title of his paper comes from. Notice in Figure 1 how both laws turn into a straight line once the x-axis is in bits.
+where $n$ is the number of equally likely options, $D$ is the distance to the target and $W$ is its width. Notice in Figure 1 how both laws become straight lines once the x-axis is in bits.
 
 <figure>
 <img src="/images/blog/swing-as-compression/fig1-hick-fitts.svg" alt="Two schematic line charts. Reaction time rises linearly with bits of choice, and movement time rises linearly with index of difficulty in bits." />
-<figcaption><strong>Figure 1.</strong> Schematic of Eq. 2 and Eq. 3. In both laws the time cost is a straight line once the x-axis is in bits. Slopes and intercepts are made up for illustration.</figcaption>
+<figcaption><strong>Figure 1.</strong> Schematic of Eq. 2 and Eq. 3. Slopes and intercepts are made up for illustration.</figcaption>
 </figure>
 
-When you think about hitting that way it gets pretty interesting. A 95 mph fastball gets to the plate in about 400 milliseconds, and the swing itself takes up something like 150 of those. That affords a hitter very little time to see the pitch, decide whether to go, and get started. If time is linear in bits, there's no way a hitter is building a swing from scratch in that window, so whatever they're doing has to already be there in some really short form that they can pull up and adjust with very little information. My thought is that building that short form is a big part of what learning to hit actually is.
+A 95 mph fastball reaches the plate in about 400 ms, and the swing takes roughly 150 of them. That affords a hitter very little time to see the pitch, decide and start. If time is linear in bits, the swing can't be built from scratch in that window, so it has to already exist in a short form that can be adjusted with very little information. I think building that short form is a big part of learning to hit.
 
 ## 3. Compression is prediction
 
 ### 3.1 Cross-entropy as the cost of a wrong model
 
-The second 3Blue1Brown video is about what happens when the thing you're compressing follows a distribution $p$ but your code was built for a different distribution $q$ [2]. The average number of bits you end up paying is the cross-entropy, and it splits into two pieces [6]:
+Suppose what you're compressing follows a distribution $p$ but your code was built for $q$ [2]. The bits you pay on average are the cross-entropy [6]:
 
 $$
 H(p, q) = -\sum_x p(x)\,\log_2 q(x) = H(p) + D_{KL}(p\,\|\,q) \tag{4}
 $$
 
-$H(p)$ is the floor, and you can't do better than that no matter how good your model is. The second term, the KL divergence, is the penalty for your model being wrong. This is also literally the loss function that language models are trained on, so "training" is the process of pushing $q$ toward $p$ until the penalty is gone.
+$H(p)$ is the floor. The KL term is the penalty for a wrong model, and it is the loss that language models are trained on.
 
-I think this is a pretty good description of a hitter. The task has some amount of uncertainty in it that never goes away (you don't know what pitch is coming, and your own body is noisy). On top of that there's a penalty for how wrong your own internal model is, and practice is supposed to shrink that penalty (Figure 2).
+A hitter looks the same to me. Some of the uncertainty never goes away (the pitch is unknown and the body is noisy), and practice shrinks the penalty that sits on top of it (Figure 2).
 
 <figure>
 <img src="/images/blog/swing-as-compression/fig2-cross-entropy.svg" alt="Schematic curve of bits per swing falling with practice toward a dashed floor line. The gap between the curve and the floor is labeled KL divergence." />
-<figcaption><strong>Figure 2.</strong> Learning drawn as Eq. 4. The dashed line is the entropy of the task, the curve is the cost under the hitter's current model, and the gap between them is what is left to learn. The curve is a power function chosen for illustration (see Eq. 5).</figcaption>
+<figcaption><strong>Figure 2.</strong> Learning drawn as Eq. 4. The dashed line is the entropy of the task, the curve is the cost under the hitter's current model, and the gap is what is left to learn. The curve is a power function chosen for illustration (see Eq. 5).</figcaption>
 </figure>
 
 ### 3.2 Blocked practice is overfitting
 
-This gives me a better way to explain blocked versus random practice, which is something we talk about a lot. In machine learning, if a model has a really low loss on the data it trained on and then falls apart on anything new, it's overfit. Shea and Morgan showed the motor version of that in 1979: blocked practice looked better during practice and worse on the retention and transfer tests [7]. Hall and colleagues then ran it with college baseball players and found the group that got extra batting practice in a random order did better on the transfer tests than the blocked group [8].
+A model with a low loss on its training data that falls apart on new data is overfit. Shea and Morgan showed the motor version of that, where blocked practice looked better during practice and worse on retention and transfer [7]. Hall and colleagues found the same with college hitters, with random-order batting practice beating blocked on the transfer tests [8].
 
-So a hitter who is crushing the same 60 mph front toss in the same spot twenty times in a row is overfitting. In terms of Eq. 4, he has driven the penalty to zero for a $p$ that isn't the one he'll see in a game. That's not me saying front toss is bad, because it's useful when someone is trying to feel a new move for the first time, but the round that looks the best is a lot of the time not the one that's doing the most for you. Guadagnoli and Lee's challenge point framework makes a similar argument, that learning depends on how much usable information the practice gives you, and that amount depends on the skill of the learner [9].
+A hitter crushing the same 60 mph front toss twenty times in a row has driven the penalty in Eq. 4 to zero for a $p$ he won't see in a game. Front toss is still useful for feeling a new move, but the round that looks the best is often not the one doing the most for you. The challenge point framework makes a similar argument, that learning depends on how much usable information practice provides, which depends on the skill of the learner [9].
 
 ### 3.3 Bad data and a bad value function
 
-This is one of the points I'm most interested in making. There are two different ways to end up with a bad model, and they map onto two different coaching problems.
+There are two ways to end up with a bad model, and they map onto two coaching problems.
 
-The first is bad data. If a model only ever trains on easy examples, it gets really good at the easy examples. That's the hitter who only ever trains in an easy practice environment. In the terms of Eq. 4, he is minimizing $D_{KL}(p_{practice}\,\|\,q)$ and what the game charges him is $D_{KL}(p_{game}\,\|\,q)$, so the further apart those two distributions are, the less of his practice carries over.
+The first is bad data. A model trained only on easy examples gets good at easy examples, like a hitter who only trains in easy environments. He minimizes $D_{KL}(p_{practice}\,\|\,q)$ while the game charges him $D_{KL}(p_{game}\,\|\,q)$, and the further apart those distributions are, the less carries over.
 
-The second is a bad value function, which is what the model is being rewarded for. A model can train on great data and still come out wrong if the reward is pointed at the wrong target. The hitting version of that is being told that backside ground balls are good. A hitter who trains under that rule is going to get very efficient at producing backside ground balls. Section 5 gets into the math, but the short version is that the measure of error you pick decides where the precision goes, so if the measure is wrong, the swing spends its precision protecting the wrong outcome.
+The second is a bad value function. A model can train on great data and still come out wrong if the reward points at the wrong target. Tell a hitter that backside ground balls are good and he will get very efficient at producing them. As Section 5 shows, the error measure decides where the precision goes, so a wrong measure protects the wrong outcome.
 
-What makes both of these a bigger deal is the compression step. Whatever was in the data and whatever was being rewarded is what gets packed down into the short form, and as the next section gets into, the short form is the hard part to change later. So the practice environment and how we score it are deciding what gets compressed, which is why I care so much about how we design the games we play in training and what we reward in them.
+Compression makes both of these matter more. Whatever was in the data and whatever was rewarded gets packed into the short form, which is the hard part to change later. That's why I care so much about how we design the games we play in training and what we reward in them.
 
-## 4. Chunking and why I think this is where automaticity comes from
+## 4. Chunking and automaticity
 
-This is the part I'm most interested in. Early on when you're learning a movement, you're running it one piece at a time and every piece takes attention. As you practice, those pieces get packed together into one thing, which is what Miller called chunking [10]. Newell and Rosenbloom argued that chunking is actually the reason practice curves follow a power law [11]:
+Early in learning, a movement runs one piece at a time and every piece takes attention. With practice the pieces get packed into one unit, which Miller called chunking [10]. Newell and Rosenbloom argued that chunking is why practice curves follow a power law [11]:
 
 $$
 T_N = T_1\,N^{-\alpha} \tag{5}
 $$
 
-where $T_N$ is the time to do the task on trial $N$. Every time a pattern gets packed into a single unit you can pull it up in one step instead of several, and the common patterns get packed first, which gives you fast gains early and slow gains later.
+where $T_N$ is the time to do the task on trial $N$. The common patterns get packed first, so gains come fast early and slow later.
 
-Once the swing is one chunk instead of ten pieces, a few things get easier at the same time. You have fewer decisions to make, which by Eq. 2 means a faster reaction. The plan is also quicker to get going: Henry and Rogers found reaction time goes up when the movement you're about to make is more complicated, as if a longer program takes longer to load [12]. And your attention is freed up to actually compete against the pitcher instead of thinking about your hands.
+One chunk means fewer decisions, which by Eq. 2 means a faster reaction. It also gets going faster, since Henry and Rogers found reaction time rises with the complexity of the movement you're about to make [12]. And it frees up attention to compete against the pitcher.
 
-The downside is that once something is packed together it's really hard to change. If I want to change one piece of a good hitter's swing, they pretty much have to unpack the whole thing, do it slowly and badly for a while, and then pack it back up. In training this shows up as a recalibration period after an adjustment, where the output drops off for a stretch before it comes back. I think that drop is the cost of re-compressing the movement, and it doesn't mean the adjustment was wrong. Masters described choking under pressure in a similar way, where a skilled person starts consciously controlling something that used to run by itself and it gets worse [13]. The way I picture it is a hitter unzipping the file in the middle of an at-bat.
+The downside is that a packed movement is hard to change. To change one piece, a hitter has to unpack the swing, run it slowly and badly for a while, and pack it back up. In training this shows up as a recalibration period after an adjustment, where output drops before it comes back. I think that drop is the cost of re-compressing the movement, and it doesn't mean the adjustment was wrong. Masters described choking in a similar way, where a skilled performer starts consciously controlling something that used to run by itself and it gets worse [13].
 
 ## 5. Why lossless compression is the wrong model
 
 ### 5.1 The problem
 
-If I stopped there, the takeaway would be that hitters should just be as repeatable as possible, and I don't think that's right. A hitter who rolls over the same ground ball to shortstop every single swing is extremely repeatable. You could describe all of his swings with almost no information, so he's very compressible, and he's also not very good.
+If I stopped there, the takeaway would be to be as repeatable as possible, and I don't think that's right. A hitter who rolls over the same ground ball to shortstop every swing is extremely compressible, and he's also not very good.
 
-The other issue is that the best movers aren't actually as repeatable as you'd think. Bernstein filmed blacksmiths and found that the hammer hit the same spot every time but the arm took a slightly different path to get there on every strike [14]. So a zip file, where you have to get every single byte back perfectly, is the wrong comparison. The better one is a JPEG, where you throw out the detail nobody can see and keep the detail that matters.
+The best movers aren't that repeatable either. Bernstein filmed blacksmiths whose hammer hit the same spot every time while the arm took a different path on every strike [14]. A zip file, where every byte has to come back, is the wrong comparison. A JPEG, which throws out the detail nobody can see, is the better one.
 
 ### 5.2 Rate-distortion
 
-The math for the JPEG version is Shannon's rate-distortion theory [15]. Instead of asking for a perfect copy, you pick a measure of error $d$ that you care about and ask what the fewest bits are that keep the average error under some tolerance $D$:
+The math for the JPEG is rate-distortion theory [15]. You pick an error measure $d$ and ask for the fewest bits that keep the average error under a tolerance $D$:
 
 $$
 R(D) = \min_{p(\hat{x}\,|\,x)\,:\;\mathbb{E}[d(x,\hat{x})]\,\le\,D} I(X;\hat{X}) \tag{6}
 $$
 
-For a single Gaussian variable with variance $\sigma^2$ and squared error, that works out to [6]:
+For one Gaussian variable with variance $\sigma^2$ and squared error, that works out to [6]:
 
 $$
 R(D) = \max\!\left(0,\ \tfrac{1}{2}\log_2\frac{\sigma^2}{D}\right) \tag{7}
 $$
 
-Two things fall out of Eq. 7 that I think matter for hitting. The first is that every time you cut the allowed error in half (in SD terms) it costs you one more bit, so precision gets expensive fast. The second is what happens when you have a lot of dimensions and the error measure only cares about some of them. If the error is weighted, $d = \sum_i w_i (x_i - \hat{x}_i)^2$, then any dimension with $w_i = 0$ gets exactly zero bits, because being wrong there costs nothing. All of the bits go to the dimensions the outcome actually depends on (Figure 3).
+Two things here matter for hitting. Halving the allowed error (in SD terms) costs one more bit, so precision gets expensive fast. And with a weighted error, $d = \sum_i w_i (x_i - \hat{x}_i)^2$, any dimension with $w_i = 0$ gets zero bits, so all of the bits go to the dimensions the outcome depends on (Figure 3).
 
-Bat speed is a good example of the tolerance side of this. A fast swing affords a hitter room for error, because the ball can be mishit and still leave the park, while a slow swing requires a more efficient collision to get the same result. In the terms of Eq. 7, more bat speed loosens $D$ on the collision, and a looser $D$ is cheaper to hit.
+Bat speed is a good example. A fast swing affords a hitter room for error, since a mishit ball can still leave the park, while a slow swing requires a more efficient collision. More bat speed loosens $D$, and a looser $D$ is cheaper to hit.
 
 <figure>
 <img src="/images/blog/swing-as-compression/fig5-rate-distortion.svg" alt="Left: the rate-distortion curve for a Gaussian, falling from several bits at tight tolerance to zero at loose tolerance. Right: a bar chart of bits spent per movement dimension, with bits on bat direction and contact depth and zero bits on elbow path, hand path and head sway." />
-<figcaption><strong>Figure 3.</strong> (a) Eq. 7. (b) The same equation applied across five made-up movement dimensions with a task-weighted error. Dimensions the outcome doesn't depend on get zero bits and are free to vary. The dimension names and weights are illustrative, not measured.</figcaption>
+<figcaption><strong>Figure 3.</strong> (a) Eq. 7. (b) The same equation across five made-up movement dimensions with a task-weighted error. Dimension names and weights are illustrative, not measured.</figcaption>
 </figure>
 
 ### 5.3 The overlap with the uncontrolled manifold
 
-This is where I think there is a real mathematical overlap and not only an analogy. The uncontrolled manifold (UCM) method from Scholz and Schoner starts with a task variable $r$ (say, bat direction at contact) that depends on a bunch of joint angles $\theta$ through $r = f(\theta)$ [16]. The Jacobian $J = \partial f / \partial \theta$ tells you which combinations of joint changes move $r$. Combinations in the null space of $J$ don't move it at all, and that null space is the uncontrolled manifold. You then split each swing's deviation from the mean into the part that lies in the manifold and the part that's orthogonal to it, and compare the variance per degree of freedom in each [17]:
+This is where I think the overlap is mathematical and not only an analogy. The uncontrolled manifold (UCM) method starts with a task variable $r$, say bat direction at contact, that depends on the joint angles $\theta$ through $r = f(\theta)$ [16]. Joint combinations in the null space of the Jacobian $J = \partial f / \partial \theta$ don't move $r$, and that null space is the uncontrolled manifold. You split each swing's deviation from the mean into the part in the manifold and the part orthogonal to it, then compare the variance per degree of freedom [17]:
 
 $$
 V_{UCM} = \frac{\sum_k \lVert \theta_{\parallel,k} \rVert^2}{(n-d)\,N}, \qquad
@@ -140,91 +140,91 @@ $$
 \Delta V = \frac{V_{UCM} - V_{ORT}}{V_{TOT}} \tag{9}
 $$
 
-with $n$ joint degrees of freedom, a $d$-dimensional task variable and $N$ swings. A positive $\Delta V$ means the variability is being steered into the directions that don't hurt you. Notice how both clouds in Figure 4 have the same total variance, and only the one on the left keeps the bat where it needs to be.
+with $n$ joint degrees of freedom, a $d$-dimensional task variable and $N$ swings. A positive $\Delta V$ means the variability is being steered into directions that don't hurt you. Notice how both clouds in Figure 4 have the same total variance, and only the one on the left keeps the bat where it needs to be.
 
-The way I read it, Eq. 8 and Eq. 6 are describing the same thing from two sides. $V_{ORT}$ is the distortion, the error in the thing you care about. $V_{UCM}$ is variance sitting in the $w_i = 0$ dimensions, where rate-distortion says you shouldn't spend any bits. Todorov and Jordan got to the same place from optimal control with what they called the minimum intervention principle, where the controller only corrects deviations that interfere with the task [18]. I haven't seen someone write those down as the same statement, so that's my interpretation and not a theorem, but all three are saying a good controller is precise where it matters and loose where it doesn't.
+I read Eq. 8 and Eq. 6 as the same thing from two sides. $V_{ORT}$ is the distortion. $V_{UCM}$ is variance in the $w_i = 0$ dimensions, where rate-distortion says to spend no bits. Todorov and Jordan reached the same place from optimal control with the minimum intervention principle, where the controller only corrects deviations that interfere with the task [18]. I haven't seen these written down as one statement, so this is my interpretation and not a theorem.
 
 <figure>
 <img src="/images/blog/swing-as-compression/fig4-ucm.svg" alt="Two scatter plots of joint 1 deviation against joint 2 deviation. On the left the cloud is stretched along a dashed diagonal line labeled uncontrolled manifold. On the right the cloud is round with the same total variance." />
-<figcaption><strong>Figure 4.</strong> Toy two-joint example of Eq. 8 and Eq. 9. Both clouds have the same total variance. In (a) almost all of it lies along the manifold where bat direction is unchanged. In (b) it is spread evenly, so the same amount of joint variability produces a lot more error at the bat. Simulated points, not athlete data.</figcaption>
+<figcaption><strong>Figure 4.</strong> Toy two-joint example of Eq. 8 and Eq. 9. In (a) almost all of the variance lies along the manifold where bat direction is unchanged. In (b) the same variance is spread evenly and produces far more error at the bat. Simulated points, not athlete data.</figcaption>
 </figure>
 
-The pitching work from Bloebaum is what got me looking at this in the first place. One preprint found that elite pitchers aren't more or less complex in how they move on average, and what separates them is how reproducible that complexity is from throw to throw [19]. The other is a time-resolved UCM analysis of the delivery, and the title is the finding: skilled pitching is not less joint variability but better-structured joint variability [20]. Gray found something related in a virtual batting study, where training increased the kind of variability that keeps the bat on the ball [21]. Figure 5 is a toy version of what that looks like over the course of a swing. Notice how the joints stay variable all the way to contact while bat direction funnels down.
+Bloebaum's pitching work is what got me looking at this. One preprint found that elite pitchers aren't more or less complex in how they move on average, and that what separates them is how reproducible that complexity is from throw to throw [19]. The other is a time-resolved UCM analysis whose title is the finding, that skilled pitching is not less joint variability but better-structured joint variability [20]. Gray found in a virtual batting study that training increased the kind of variability that keeps the bat on the ball [21]. Figure 5 is a toy version. Notice how the joints stay variable all the way to contact while bat direction funnels down.
 
 <figure>
 <img src="/images/blog/swing-as-compression/fig3-funnel.svg" alt="Three panels over normalized time from load to contact. Forty simulated joint angle traces that stay spread out, forty bat direction traces that converge toward contact, and the between-swing standard deviation of each, with the bat direction curve dropping while the joint curve stays high." />
-<figcaption><strong>Figure 5.</strong> A toy two-joint swing, drawn the way time-resolved variability is usually shown [20]. (a) One joint across 40 simulated swings. (b) Bat direction, the sum of the two joints, for the same swings. (c) Between-swing SD of each over normalized time. The joints stay variable all the way to contact while the task variable funnels down. Simulated from a seeded toy model, not athlete data.</figcaption>
+<figcaption><strong>Figure 5.</strong> A toy two-joint swing, drawn the way time-resolved variability is usually shown [20]. (a) One joint across 40 simulated swings. (b) Bat direction, the sum of the two joints, for the same swings. (c) Between-swing SD of each over normalized time. Simulated from a seeded toy model, not athlete data.</figcaption>
 </figure>
 
 ### 5.4 What the public data looks like
 
-I've seen some of this in the public Statcast bat tracking data. If you take out the part of a hitter's swing-to-swing variation that's explained by the pitch (how high it is, in or away, what type of pitch), the leftover scatter is related to xwOBA at about -0.37 from 2024 through 2026, meaning the tighter hitters tend to produce more. That leftover scatter also holds up year to year at around 0.65, so it looks like a real trait. What I found interesting is that how much a hitter adjusts is a trait too. How much a hitter changes his swing path tilt based on pitch height is one of the most stable things I've looked at in public data, close to 0.9 year over year. You can see it in the extreme cases too. On home runs hit on pitches well outside the zone, the postural adjustments get really large when the path isn't "optimal" for the pitch location.
+Public Statcast bat tracking shows some of this. Take out the part of a hitter's swing-to-swing variation that's explained by the pitch (height, in or away, pitch type), and the leftover scatter correlates with xwOBA at about -0.37 from 2024 through 2026, so the tighter hitters tend to produce more. It also holds year to year at about 0.65. How much a hitter adjusts is a trait too. The change in swing path tilt with pitch height is one of the most stable things I've looked at in public data, close to 0.9 year over year. The extreme cases show it as well. On home runs hit well outside the zone, the postural adjustments get very large when the path isn't "optimal" for the pitch location.
 
-So my current way of thinking about it is that the swing isn't stored like a recording that gets played back. It's more like a short code with a few dials on it, where the sequence and the rhythm stay about the same and the dials move with the pitch. Schmidt's schema theory said something very close to this in 1975, with a generalized motor program that holds the invariant features and a small set of parameters that get set on each attempt [22].
+So I don't think of the swing as a recording that gets played back. It's closer to a short code with a few dials on it, where the sequence and rhythm stay about the same and the dials move with the pitch. Schmidt's schema theory said nearly this in 1975, with a generalized motor program holding the invariant features and a few parameters set on each attempt [22].
 
 ## 6. Reconciling the two theories
 
-I lean pretty heavily toward the ecological side in how I coach. I think the environment does most of the teaching, and that a big part of my job is setting up games and constraints where the movement I want is the best solution to the problem. People on that side really don't like the idea of a "motor program," which is the swing being saved in your head like a file, and I mostly agree with them on that. Araujo and Davids have a whole paper asking what exactly is "acquired" in skill acquisition, and their answer is a better fit between the athlete and the environment, not a stored thing [23].
+I lean ecological in how I coach. The environment does most of the teaching, and a lot of my job is building games and constraints where the movement I want is the best solution to the problem. That side rejects the "motor program," the swing saved in your head like a file, and I mostly agree. Araujo and Davids argue that what gets "acquired" is a better fit between the athlete and the environment and not a stored thing [23].
 
-Most of Sections 2 through 4 comes from the other side, the information processing view, and those two sides usually get treated as a disagreement. I think compression is actually a way of reconciling them. Compression is only about how short a description of something can be, and it doesn't say anything about where that description lives, so it doesn't need a file stored in the head.
+Sections 2 through 4 come from the information processing side, and the two usually get treated as a disagreement. I think compression reconciles them. It only concerns how short a description can be and says nothing about where the description lives, so it doesn't need a file in the head.
 
-The dynamical systems version of a skill is an attractor, which is a stable pattern the body settles into. The classic example is the Haken-Kelso-Bunz model, where the coordination between two limbs behaves like a ball rolling downhill on a landscape $V$, and the stable patterns are the bottoms of the wells [24]:
+The dynamical systems version of a skill is an attractor, a stable pattern the body settles into. In the Haken-Kelso-Bunz model, the coordination between two limbs behaves like a ball rolling downhill on a landscape $V$, and the stable patterns are the bottoms of the wells [24]:
 
 $$
 \dot{x} = -\frac{dV}{dx} + \text{noise} \tag{10}
 $$
 
-Training a model works the same way. The cross-entropy in Eq. 4 defines a landscape over the model's parameters, and training is taking one step downhill on it over and over. So the hill climbing idea holds for both theories. In one of them the thing moving on the landscape is the body's coordination and in the other it's the model, but in both, learning is the system finding the low points, and practice reshaping the landscape so the low points end up in better places.
+Training a model works the same way, with the cross-entropy in Eq. 4 defining a landscape over the parameters and training stepping downhill on it. So the hill climbing idea holds for both theories. In one the body's coordination moves on the landscape and in the other the model does. In both, learning finds the low points and practice reshapes the landscape so they end up in better places.
 
-What makes this more than a metaphor is what an attractor does to information. For a system like Eq. 10 with noise of strength $T$, the long-run distribution of where it ends up is
+An attractor also does something specific to information. For Eq. 10 with noise of strength $T$, the long-run distribution of states is
 
 $$
 p(x) \propto e^{-V(x)/T} \tag{11}
 $$
 
-Near the bottom of a well with stiffness $k$ that is a Gaussian with variance $T/k$, so its entropy is $\tfrac{1}{2}\log_2(2\pi e\,T/k)$ bits. A deeper, steeper well takes fewer bits to describe (Figure 6). So an attractor state is a version of information minimization, which is compression. Haken, the H in Haken-Kelso-Bunz, made a version of this argument himself, that a system with a huge number of degrees of freedom ends up being described by a few order parameters [25]. Friston's free energy principle is the most formal attempt I know of to say that self-organizing systems settle into attractors by minimizing surprise [26], and surprise is the same $-\log_2 p$ from Section 2.
+Near the bottom of a well with stiffness $k$ this is a Gaussian with variance $T/k$, so its entropy is $\tfrac{1}{2}\log_2(2\pi e\,T/k)$ bits. A steeper well takes fewer bits to describe (Figure 6), which makes an attractor state a version of information minimization, i.e. compression. Haken made a version of this argument himself, that a system with a huge number of degrees of freedom ends up described by a few order parameters [25]. Friston's free energy principle is the most formal attempt I know of to say that self-organizing systems settle into attractors by minimizing surprise [26], and surprise is the same $-\log_2 p$ from Section 2.
 
 <figure>
 <img src="/images/blog/swing-as-compression/fig6-attractor.svg" alt="Left: two potential wells, one shallow and one deep. Right: the distribution of states each one produces, wide for the shallow well and narrow for the deep well, with the deep well labeled as 1.5 bits cheaper to describe." />
-<figcaption><strong>Figure 6.</strong> Eq. 10 and Eq. 11 for two wells. (a) A shallow attractor and one eight times stiffer. (b) Where a noisy system ends up in each. The stiffer well produces a narrower distribution, which takes 1.5 fewer bits to describe. Drawn from the equations, not athlete data.</figcaption>
+<figcaption><strong>Figure 6.</strong> Eq. 10 and Eq. 11 for a shallow well and one eight times stiffer. The stiffer well produces a narrower distribution, which takes 1.5 fewer bits to describe. Drawn from the equations, not athlete data.</figcaption>
 </figure>
 
-I haven't seen this worked out for hitting specifically, and I'm sure people on both sides would have issues with parts of it. The prediction part fits too, though. A hitter who is tuned in to the right information from the pitcher gets surprised less often, which in Eq. 4 is a smaller KL term, and the ecological side would call that same thing attunement.
+I haven't seen this worked out for hitting, and both sides would have issues with parts of it. But a hitter tuned in to the right information gets surprised less often, which is a smaller KL term in Eq. 4, and the ecological side calls that attunement.
 
 ## 7. What I'd want to measure
 
-None of this is worth much unless it turns into something I can measure. The cleanest version comes from the minimum description length idea [27]: fit a model to a hitter's first $N-1$ swings and ask how many bits it takes to describe swing $N$.
+None of this is worth much unless I can measure it. The cleanest version comes from minimum description length [27]. Fit a model to a hitter's first $N-1$ swings and ask how many bits swing $N$ takes to describe:
 
 $$
 L_N = -\log_2 q\!\left(x_N \mid x_1, \dots, x_{N-1}\right) \tag{12}
 $$
 
-If the prediction errors are roughly Gaussian with SD $\sigma$, the entropy is $\tfrac{1}{2}\log_2(2\pi e\,\sigma^2)$ bits per dimension, so cutting the leftover SD in half saves exactly one bit. That gives what I'd want to look at a common unit:
+If the prediction errors are roughly Gaussian with SD $\sigma$, the entropy is $\tfrac{1}{2}\log_2(2\pi e\,\sigma^2)$ bits per dimension, so halving the leftover SD saves one bit. That puts everything I'd want to look at in the same unit:
 
-- $L_N$ over time for one hitter. If learning really is compression, it should fall as a skill settles in.
-- The same thing split by Eq. 8 into the part of the movement that changes where the barrel ends up at contact and the part that doesn't. I'd expect the good hitters to only tighten up the first part.
-- Whether the rhythm of the swing stays the same when the whole swing speeds up or slows down, which is what you'd expect if relative timing is the fixed part of the code [22].
-- How long the recalibration period lasts after an adjustment in training and how far the output drops during it, which would tell you how tightly packed the old swing was.
+- $L_N$ over time for one hitter, which should fall as a skill settles in.
+- $L_N$ split by Eq. 8 into what moves the barrel at contact and what doesn't. I'd expect the good hitters to only tighten up the first part.
+- Whether the rhythm of the swing holds when its tempo changes, as it should if relative timing is the fixed part of the code [22].
+- How long the recalibration period lasts after an adjustment in training and how far output drops during it, which would show how tightly packed the old swing was.
 
 ## 8. Limitations, or things I've already gotten wrong
 
-I've been working on a few of these already, and mostly what I've learned is how easy it is to fool yourself.
+I've been working on a few of these, and mostly I've learned how easy it is to fool yourself.
 
-The biggest one is that timing gets into everything. A lot of the fancier ways of measuring how "complex" a movement is will change just because a swing took a few milliseconds longer, even if the shape of the swing is exactly the same. So if you don't line the swings up in time first, you can think you're measuring how complex someone's swing is when really you're measuring how consistent their timing is. Timing consistency is still a real thing and worth knowing about, but it's a different claim, and it took me way too long to figure out I was mixing the two up.
+Timing gets into everything. A lot of the measures of movement "complexity" change when a swing takes a few milliseconds longer, even if its shape is identical. If you don't align the swings in time first, you can end up measuring timing consistency and calling it complexity. Timing consistency is worth knowing about, but it's a different claim, and it took me way too long to separate the two.
 
-Another one is that comparing hitters to each other doesn't tell you what happens inside one hitter. Even if better hitters are more repeatable, that doesn't mean making one hitter more repeatable is going to make him better, and I've had those two questions give me different answers more than once.
+Comparing hitters to each other doesn't tell you what happens inside one hitter. Better hitters being more repeatable doesn't mean that making one hitter more repeatable makes him better, and those two questions have given me different answers more than once.
 
-One session also isn't a lot to go on. How spread out a hitter's swings are bounces around a lot from one day to the next, way more than his average swing does.
+One session isn't much to go on. Swing-to-swing spread bounces around from day to day far more than the average swing does.
 
-The UCM result depends completely on what you pick for the task variable in Eq. 8, and hitting is harder than pitching here, because what you're trying to achieve changes with every pitch.
+The UCM result depends entirely on the task variable you pick in Eq. 8, and hitting is harder than pitching here because the goal changes with every pitch.
 
-And the last one is that your tools can make things up. I built a small physics model of a swing to try to map out which combinations of timing lead to solid contact, and the first maps I got had these really intricate, cool looking edges that I got pretty excited about. It turned out all of it was coming from a bug in how the simulation was stepping through time. When I fixed that, the area of good solutions was just a plain smooth region a few tens of milliseconds wide, which is a lot less exciting but I trust it a lot more.
+Tools can also make things up. I built a small physics model of the swing to map which combinations of timing produce solid contact, and the first maps had intricate, cool looking edges that I got pretty excited about. All of it came from a bug in how the simulation stepped through time. Once I fixed it, the region of good solutions was a plain smooth area a few tens of milliseconds wide, which is less exciting but I trust it a lot more.
 
 ## 9. Where my head is at
 
-I'm not saying the brain is running a zip program. What I like about this is that it gives me one way to talk about a bunch of things that we usually talk about separately, like how repeatable a swing is, how well it adjusts, how automatic it feels, how hard it is to change, and how well practice carries over to games. All of those are versions of the same question, which is how short of a description a hitter has found for a swing that still works.
+I'm not saying the brain runs a zip program. What I like is having one way to talk about things we usually treat separately, like how repeatable a swing is, how well it adjusts, how automatic it feels, how hard it is to change, and how well practice carries over to games. Each of those is asking how short a description a hitter has found for a swing that still works.
 
-I don't know yet if what I want to measure is going to hold up, and some of it probably won't. I'd still rather have something I can test and be wrong about than keep going back and forth on feel versus mechanics.
+Some of what I want to measure probably won't hold up. I'd still rather be wrong about something I can test than keep going back and forth on feel versus mechanics.
 
 ## References
 
