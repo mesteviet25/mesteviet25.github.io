@@ -8,7 +8,7 @@ draft: true
 
 ## Abstract
 
-I went down a rabbit hole on data compression and came out thinking it lines up with a lot of what I've been reading in motor learning and what I've been looking at in swing-to-swing variability. This post is me trying to work through that. I walk through where information theory already shows up in motor control (Fitts's and Hick's laws), why "compression is prediction" maps onto pretraining and practice design, why chunking is a reasonable explanation for automaticity, and why the right comparison for a good swing is lossy compression (rate-distortion) instead of lossless. Then I try to connect that to the uncontrolled manifold work, which I think is the closest real mathematical overlap, and lay out what I'd want to measure. Every figure in here is a schematic drawn from the equations or from a toy model, and none of them are athlete data.
+I went down a rabbit hole on data compression and came out thinking it lines up with a lot of what I've been reading in motor learning and what I've been looking at in swing-to-swing variability. This post is me trying to work through that. I walk through where information theory already shows up in motor control (Fitts's and Hick's laws), why "compression is prediction" maps onto pretraining and practice design, why chunking is a reasonable explanation for automaticity, and why the right comparison for a good swing is lossy compression (rate-distortion) instead of lossless. Then I try to connect that to the uncontrolled manifold work, which I think is the closest real mathematical overlap, argue that compression is a way of reconciling the information processing and ecological views of motor learning, and lay out what I'd want to measure. Every figure in here is a schematic drawn from the equations or from a toy model, and none of them are athlete data.
 
 ## 1. Introduction
 
@@ -74,6 +74,16 @@ It also gives me a better way to explain blocked versus random practice, which i
 
 So a hitter who is crushing the same 60 mph front toss in the same spot twenty times in a row is overfitting. In terms of Eq. 4, he has driven the penalty to zero for a $p$ that isn't the one he'll see in a game. That's not me saying front toss is bad, because it's useful when someone is trying to feel a new move for the first time, but the round that looks the best is a lot of the time not the one that's doing the most for you. Guadagnoli and Lee's challenge point framework makes a similar argument, that learning depends on how much usable information the practice gives you, and that amount depends on the skill of the learner [10].
 
+### 3.4 Bad data and a bad value function
+
+This is one of the points I'm most interested in making. There are two different ways to end up with a bad model, and they map onto two different coaching problems.
+
+The first is bad data. If a model only ever trains on easy examples, it gets really good at the easy examples. That's the hitter who only ever trains in an easy practice environment. In the terms of Eq. 4, he is minimizing $D_{KL}(p_{practice}\,\|\,q)$ and what the game charges him is $D_{KL}(p_{game}\,\|\,q)$, so the further apart those two distributions are, the less of his practice carries over.
+
+The second is a bad value function, which is what the model is being rewarded for. A model can train on great data and still come out wrong if the reward is pointed at the wrong target. The hitting version of that is being told that backside ground balls are good. A hitter who trains under that rule is going to get very efficient at producing backside ground balls. Section 5 gets into the math, but the short version is that the measure of error you pick decides where the precision goes, so if the measure is wrong, the swing spends its precision protecting the wrong outcome.
+
+What makes both of these a bigger deal is the compression step. Whatever was in the data and whatever was being rewarded is what gets packed down into the short form, and as the next section gets into, the short form is the hard part to change later. So the practice environment and how we score it are deciding what gets compressed, which is why I care so much about how we design the games we play in training and what we reward in them.
+
 ## 4. Chunking and why I think this is where automaticity comes from
 
 This is the part I'm most interested in. Early on when you're learning a movement, you're running it one piece at a time and every piece takes attention. As you practice, those pieces get packed together into one thing, which is what Miller called chunking [11]. Newell and Rosenbloom argued that chunking is actually the reason practice curves follow a power law [12]:
@@ -86,9 +96,7 @@ where $T_N$ is the time to do the task on trial $N$. Every time a pattern gets p
 
 Once the swing is one chunk instead of ten pieces, a few things get easier at the same time. You have fewer decisions to make, which by Eq. 2 means a faster reaction. The plan is also quicker to get going: Henry and Rogers found reaction time goes up when the movement you're about to make is more complicated, as if a longer program takes longer to load [13]. And your attention is freed up to actually compete against the pitcher instead of thinking about your hands.
 
-I think that's what hitters mean when they say a swing feels automatic, and it's also why "just stop thinking" works okay for a pro and is terrible advice for a beginner, because the beginner doesn't have anything packed together yet.
-
-The downside is that once something is packed together it's really hard to change. If I want to change one piece of a good hitter's swing, they pretty much have to unpack the whole thing, do it slowly and badly for a while, and then pack it back up, and anyone who has tried to make a swing change in the middle of a season knows exactly how bad that stretch feels. Masters described choking under pressure in a similar way, where a skilled person starts consciously controlling something that used to run by itself and it gets worse [14]. The way I picture it is a hitter unzipping the file in the middle of an at-bat.
+The downside is that once something is packed together it's really hard to change. If I want to change one piece of a good hitter's swing, they pretty much have to unpack the whole thing, do it slowly and badly for a while, and then pack it back up. In training this shows up as a recalibration period after an adjustment, where the output drops off for a stretch before it comes back. I think that drop is the cost of re-compressing the movement, and it doesn't mean the adjustment was wrong. Masters described choking under pressure in a similar way, where a skilled person starts consciously controlling something that used to run by itself and it gets worse [14]. The way I picture it is a hitter unzipping the file in the middle of an at-bat.
 
 ## 5. Why lossless compression is the wrong model
 
@@ -156,18 +164,41 @@ I've seen some of this in the public Statcast bat tracking data. If you take out
 
 So my current way of thinking about it is that the swing isn't stored like a recording that gets played back. It's more like a short code with a few dials on it, where the sequence and the rhythm stay about the same and the dials move with the pitch. Schmidt's schema theory said something very close to this in 1975, with a generalized motor program that holds the invariant features and a small set of parameters that get set on each attempt [23].
 
-## 6. Where the ecological people would disagree with me
+## 6. Reconciling the two theories
 
 I lean pretty heavily toward the ecological side in how I coach. I think the environment does most of the teaching, and that a big part of my job is setting up games and constraints where the movement I want is the best solution to the problem. People on that side really don't like the idea of a "motor program," which is the swing being saved in your head like a file, and I mostly agree with them on that. Araujo and Davids have a whole paper asking what exactly is "acquired" in skill acquisition, and their answer is a better fit between the athlete and the environment, not a stored thing [24].
 
-I don't think the compression idea actually needs the file though. Compression is only about how short a description of something can be, and it doesn't say anything about where that description lives. When the dynamical systems people talk about an attractor, which is a stable pattern the body settles into [25], they're describing a movement that doesn't take much information to describe, and to me that's the same thing I've been calling a short code. The prediction part fits too. A hitter who is tuned in to the right information from the pitcher is going to get surprised less often, which in Eq. 4 is a smaller KL term.
+Most of Sections 2 through 4 comes from the other side, the information processing view, and those two sides usually get treated as a disagreement. I think compression is actually a way of reconciling them. Compression is only about how short a description of something can be, and it doesn't say anything about where that description lives, so it doesn't need a file stored in the head.
+
+The dynamical systems version of a skill is an attractor, which is a stable pattern the body settles into. The classic example is the Haken-Kelso-Bunz model, where the coordination between two limbs behaves like a ball rolling downhill on a landscape $V$, and the stable patterns are the bottoms of the wells [25]:
+
+$$
+\dot{x} = -\frac{dV}{dx} + \text{noise} \tag{10}
+$$
+
+Training a model works the same way. The cross-entropy in Eq. 4 defines a landscape over the model's parameters, and training is taking one step downhill on it over and over. So the hill climbing idea holds for both theories. In one of them the thing moving on the landscape is the body's coordination and in the other it's the model, but in both, learning is the system finding the low points, and practice reshaping the landscape so the low points end up in better places.
+
+What makes this more than a metaphor is what an attractor does to information. For a system like Eq. 10 with noise of strength $T$, the long-run distribution of where it ends up is
+
+$$
+p(x) \propto e^{-V(x)/T} \tag{11}
+$$
+
+Near the bottom of a well with stiffness $k$ that is a Gaussian with variance $T/k$, so its entropy is $\tfrac{1}{2}\log_2(2\pi e\,T/k)$ bits. A deeper, steeper well takes fewer bits to describe (Figure 6). So an attractor state is a version of information minimization, which is compression. Haken, the H in Haken-Kelso-Bunz, made a version of this argument himself, that a system with a huge number of degrees of freedom ends up being described by a few order parameters [26]. Friston's free energy principle is the most formal attempt I know of to say that self-organizing systems settle into attractors by minimizing surprise [27], and surprise is the same $-\log_2 p$ from Section 2.
+
+<figure>
+<img src="/images/blog/swing-as-compression/fig6-attractor.svg" alt="Left: two potential wells, one shallow and one deep. Right: the distribution of states each one produces, wide for the shallow well and narrow for the deep well, with the deep well labeled as 1.5 bits cheaper to describe." />
+<figcaption><strong>Figure 6.</strong> Eq. 10 and Eq. 11 for two wells. (a) A shallow attractor and one eight times stiffer. (b) Where a noisy system ends up in each. The stiffer well produces a narrower distribution, which takes 1.5 fewer bits to describe. Drawn from the equations, not athlete data.</figcaption>
+</figure>
+
+I haven't seen this worked out for hitting specifically, and I'm sure people on both sides would have issues with parts of it. The prediction part fits too, though. A hitter who is tuned in to the right information from the pitcher gets surprised less often, which in Eq. 4 is a smaller KL term, and the ecological side would call that same thing attunement.
 
 ## 7. What I'd want to measure
 
-None of this is worth much unless it turns into something I can measure. The cleanest version comes from the minimum description length idea [26]: fit a model to a hitter's first $N-1$ swings and ask how many bits it takes to describe swing $N$.
+None of this is worth much unless it turns into something I can measure. The cleanest version comes from the minimum description length idea [28]: fit a model to a hitter's first $N-1$ swings and ask how many bits it takes to describe swing $N$.
 
 $$
-L_N = -\log_2 q\!\left(x_N \mid x_1, \dots, x_{N-1}\right) \tag{10}
+L_N = -\log_2 q\!\left(x_N \mid x_1, \dots, x_{N-1}\right) \tag{12}
 $$
 
 If the prediction errors are roughly Gaussian with SD $\sigma$, the entropy is $\tfrac{1}{2}\log_2(2\pi e\,\sigma^2)$ bits per dimension, so cutting the leftover SD in half saves exactly one bit. That gives what I'd want to look at a common unit:
@@ -175,7 +206,7 @@ If the prediction errors are roughly Gaussian with SD $\sigma$, the entropy is $
 - $L_N$ over time for one hitter. If learning really is compression, it should fall as a skill settles in.
 - The same thing split by Eq. 8 into the part of the movement that changes where the barrel ends up at contact and the part that doesn't. I'd expect the good hitters to only tighten up the first part.
 - Whether the rhythm of the swing stays the same when the whole swing speeds up or slows down, which is what you'd expect if relative timing is the fixed part of the code [23].
-- How far a hitter drops off after a mechanical change and how long it takes to get back, which would tell you how tightly packed the old swing was.
+- How long the recalibration period lasts after an adjustment in training and how far the output drops during it, which would tell you how tightly packed the old swing was.
 - How many reps it takes someone to figure out a brand new drill, and whether that depends on how much variety they've had in their training [7].
 
 ## 8. Limitations, or things I've already gotten wrong
@@ -225,4 +256,6 @@ I don't know yet if what I want to measure is going to hold up, and some of it p
 23. Schmidt RA. A schema theory of discrete motor skill learning. Psychological Review. 1975;82(4):225-260.
 24. Araujo D, Davids K. What exactly is acquired during skill acquisition? Journal of Consciousness Studies. 2011;18(3-4):7-23.
 25. Haken H, Kelso JAS, Bunz H. A theoretical model of phase transitions in human hand movements. Biological Cybernetics. 1985;51(5):347-356.
-26. Rissanen J. Modeling by shortest data description. Automatica. 1978;14(5):465-471.
+26. Haken H. Information and Self-Organization: A Macroscopic Approach to Complex Systems. Springer; 1988.
+27. Friston K. The free-energy principle: a unified brain theory? Nature Reviews Neuroscience. 2010;11(2):127-138.
+28. Rissanen J. Modeling by shortest data description. Automatica. 1978;14(5):465-471.

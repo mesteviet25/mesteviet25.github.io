@@ -165,4 +165,22 @@ b.set(title="(b) where the bits go", xlabel="rate spent [bits]", xlim=(0, 3.4))
 fig.tight_layout(w_pad=2.5)
 save(fig, "fig5-rate-distortion.svg")
 
+# Figure 6: attractor depth and the bits needed to describe the state ----------------------
+fig, (a, b) = plt.subplots(1, 2, figsize=(8.8, 3.6))
+x = np.linspace(-3, 3, 500)
+temp = 1.0
+for k, col, style, name in [(1.0, BLUE, "-", "shallow well"), (8.0, PINK, (0, (5, 3)), "deep well")]:
+    a.plot(x, 0.5 * k * x ** 2, color=col, linestyle=style)
+    sd = np.sqrt(temp / k)
+    b.plot(x, np.exp(-0.5 * (x / sd) ** 2) / (sd * np.sqrt(2 * np.pi)), color=col, linestyle=style)
+a.set(title="(a) landscape V(x)", xlabel="coordination state x", ylabel="V(x)", ylim=(0, 6))
+a.annotate("shallow well", (2.3, 0.5 * 2.3 ** 2), xytext=(-84, -4), textcoords="offset points", color=INK, fontsize=10.5)
+a.annotate("deep well", (0.95, 0.5 * 8 * 0.95 ** 2), xytext=(8, 4), textcoords="offset points", color=INK, fontsize=10.5)
+b.set(title="(b) where the system ends up", xlabel="coordination state x", ylabel="probability density")
+b.annotate("shallow well", (1.3, 0.17), xytext=(6, 8), textcoords="offset points", color=INK, fontsize=10.5)
+b.annotate("deep well:\n1.5 bits cheaper\nto describe", (0.3, 0.8), xytext=(14, -4), textcoords="offset points",
+           color=INK, fontsize=10.5)
+fig.tight_layout(w_pad=2.5)
+save(fig, "fig6-attractor.svg")
+
 print("wrote", sorted(p.name for p in OUT.glob("*.svg")))
