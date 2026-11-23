@@ -12,7 +12,7 @@ draft: true
 
 ## Abstract
 
-I went down a rabbit hole on data compression and came out thinking it lines up with a lot of what I've been reading in motor learning and what I've been looking at in swing-to-swing variability. This post is me trying to work through that. I walk through where information theory already shows up in motor control (Fitts's and Hick's laws), why "compression is prediction" maps onto pretraining and practice design, why chunking is a reasonable explanation for automaticity, and why the right comparison for a good swing is lossy compression (rate-distortion) instead of lossless. Then I try to connect that to the uncontrolled manifold work, which I think is the closest real mathematical overlap, argue that compression is a way of reconciling the information processing and ecological views of motor learning, and lay out what I'd want to measure. Every figure in here is a schematic drawn from the equations or from a toy model, and none of them are athlete data.
+I went down a rabbit hole on data compression and came out thinking it lines up with a lot of what I've been reading in motor learning and what I've been looking at in swing-to-swing variability. This post is me trying to work through that. I walk through where information theory already shows up in motor control (Fitts's and Hick's laws), why "compression is prediction" maps onto practice design, why chunking is a reasonable explanation for automaticity, and why the right comparison for a good swing is lossy compression (rate-distortion) instead of lossless. Then I try to connect that to the uncontrolled manifold work, which I think is the closest real mathematical overlap, argue that compression is a way of reconciling the information processing and ecological views of motor learning, and lay out what I'd want to measure. Every figure in here is a schematic drawn from the equations or from a toy model, and none of them are athlete data.
 
 ## 1. Introduction
 
@@ -66,19 +66,13 @@ I think this is a pretty good description of a hitter. The task has some amount 
 <figcaption><strong>Figure 2.</strong> Learning drawn as Eq. 4. The dashed line is the entropy of the task, the curve is the cost under the hitter's current model, and the gap between them is what is left to learn. The curve is a power function chosen for illustration (see Eq. 5).</figcaption>
 </figure>
 
-### 3.2 Pretraining
+### 3.2 Blocked practice is overfitting
 
-The way language models get trained is in two steps. First they get pretrained on a giant pile of general text where the only job is predicting the next word, and then they get fine-tuned on whatever specific thing you want them to do. Most of what the model can do comes from the first step, and the second step goes fast because the general structure is already built.
+This gives me a better way to explain blocked versus random practice, which is something we talk about a lot. In machine learning, if a model has a really low loss on the data it trained on and then falls apart on anything new, it's overfit. Shea and Morgan showed the motor version of that in 1979: blocked practice looked better during practice and worse on the retention and transfer tests [7]. Hall and colleagues then ran it with college baseball players and found the group that got extra batting practice in a random order did better on the transfer tests than the blocked group [8].
 
-I think there's a version of this in hitters. Braun and colleagues had people practice a bunch of related motor tasks and found they picked up a new task from that same family way faster than people starting cold, because they had already learned what all those tasks have in common [7]. They called it structural learning. That's pretty much what I see with the kids who played three sports growing up versus the kid who has taken a million swings off a tee. The multi-sport kid has been pretrained on a wide range of movement problems, and the tee kid has basically memorized one of them.
+So a hitter who is crushing the same 60 mph front toss in the same spot twenty times in a row is overfitting. In terms of Eq. 4, he has driven the penalty to zero for a $p$ that isn't the one he'll see in a game. That's not me saying front toss is bad, because it's useful when someone is trying to feel a new move for the first time, but the round that looks the best is a lot of the time not the one that's doing the most for you. Guadagnoli and Lee's challenge point framework makes a similar argument, that learning depends on how much usable information the practice gives you, and that amount depends on the skill of the learner [9].
 
-### 3.3 Blocked practice is overfitting
-
-It also gives me a better way to explain blocked versus random practice, which is something we talk about a lot. In machine learning, if a model has a really low loss on the data it trained on and then falls apart on anything new, it's overfit. Shea and Morgan showed the motor version of that in 1979: blocked practice looked better during practice and worse on the retention and transfer tests [8]. Hall and colleagues then ran it with college baseball players and found the group that got extra batting practice in a random order did better on the transfer tests than the blocked group [9].
-
-So a hitter who is crushing the same 60 mph front toss in the same spot twenty times in a row is overfitting. In terms of Eq. 4, he has driven the penalty to zero for a $p$ that isn't the one he'll see in a game. That's not me saying front toss is bad, because it's useful when someone is trying to feel a new move for the first time, but the round that looks the best is a lot of the time not the one that's doing the most for you. Guadagnoli and Lee's challenge point framework makes a similar argument, that learning depends on how much usable information the practice gives you, and that amount depends on the skill of the learner [10].
-
-### 3.4 Bad data and a bad value function
+### 3.3 Bad data and a bad value function
 
 This is one of the points I'm most interested in making. There are two different ways to end up with a bad model, and they map onto two different coaching problems.
 
@@ -90,7 +84,7 @@ What makes both of these a bigger deal is the compression step. Whatever was in 
 
 ## 4. Chunking and why I think this is where automaticity comes from
 
-This is the part I'm most interested in. Early on when you're learning a movement, you're running it one piece at a time and every piece takes attention. As you practice, those pieces get packed together into one thing, which is what Miller called chunking [11]. Newell and Rosenbloom argued that chunking is actually the reason practice curves follow a power law [12]:
+This is the part I'm most interested in. Early on when you're learning a movement, you're running it one piece at a time and every piece takes attention. As you practice, those pieces get packed together into one thing, which is what Miller called chunking [10]. Newell and Rosenbloom argued that chunking is actually the reason practice curves follow a power law [11]:
 
 $$
 T_N = T_1\,N^{-\alpha} \tag{5}
@@ -98,9 +92,9 @@ $$
 
 where $T_N$ is the time to do the task on trial $N$. Every time a pattern gets packed into a single unit you can pull it up in one step instead of several, and the common patterns get packed first, which gives you fast gains early and slow gains later.
 
-Once the swing is one chunk instead of ten pieces, a few things get easier at the same time. You have fewer decisions to make, which by Eq. 2 means a faster reaction. The plan is also quicker to get going: Henry and Rogers found reaction time goes up when the movement you're about to make is more complicated, as if a longer program takes longer to load [13]. And your attention is freed up to actually compete against the pitcher instead of thinking about your hands.
+Once the swing is one chunk instead of ten pieces, a few things get easier at the same time. You have fewer decisions to make, which by Eq. 2 means a faster reaction. The plan is also quicker to get going: Henry and Rogers found reaction time goes up when the movement you're about to make is more complicated, as if a longer program takes longer to load [12]. And your attention is freed up to actually compete against the pitcher instead of thinking about your hands.
 
-The downside is that once something is packed together it's really hard to change. If I want to change one piece of a good hitter's swing, they pretty much have to unpack the whole thing, do it slowly and badly for a while, and then pack it back up. In training this shows up as a recalibration period after an adjustment, where the output drops off for a stretch before it comes back. I think that drop is the cost of re-compressing the movement, and it doesn't mean the adjustment was wrong. Masters described choking under pressure in a similar way, where a skilled person starts consciously controlling something that used to run by itself and it gets worse [14]. The way I picture it is a hitter unzipping the file in the middle of an at-bat.
+The downside is that once something is packed together it's really hard to change. If I want to change one piece of a good hitter's swing, they pretty much have to unpack the whole thing, do it slowly and badly for a while, and then pack it back up. In training this shows up as a recalibration period after an adjustment, where the output drops off for a stretch before it comes back. I think that drop is the cost of re-compressing the movement, and it doesn't mean the adjustment was wrong. Masters described choking under pressure in a similar way, where a skilled person starts consciously controlling something that used to run by itself and it gets worse [13]. The way I picture it is a hitter unzipping the file in the middle of an at-bat.
 
 ## 5. Why lossless compression is the wrong model
 
@@ -108,11 +102,11 @@ The downside is that once something is packed together it's really hard to chang
 
 If I stopped there, the takeaway would be that hitters should just be as repeatable as possible, and I don't think that's right. A hitter who rolls over the same ground ball to shortstop every single swing is extremely repeatable. You could describe all of his swings with almost no information, so he's very compressible, and he's also not very good.
 
-The other issue is that the best movers aren't actually as repeatable as you'd think. Bernstein filmed blacksmiths and found that the hammer hit the same spot every time but the arm took a slightly different path to get there on every strike [15]. So a zip file, where you have to get every single byte back perfectly, is the wrong comparison. The better one is a JPEG, where you throw out the detail nobody can see and keep the detail that matters.
+The other issue is that the best movers aren't actually as repeatable as you'd think. Bernstein filmed blacksmiths and found that the hammer hit the same spot every time but the arm took a slightly different path to get there on every strike [14]. So a zip file, where you have to get every single byte back perfectly, is the wrong comparison. The better one is a JPEG, where you throw out the detail nobody can see and keep the detail that matters.
 
 ### 5.2 Rate-distortion
 
-The math for the JPEG version is Shannon's rate-distortion theory [16]. Instead of asking for a perfect copy, you pick a measure of error $d$ that you care about and ask what the fewest bits are that keep the average error under some tolerance $D$:
+The math for the JPEG version is Shannon's rate-distortion theory [15]. Instead of asking for a perfect copy, you pick a measure of error $d$ that you care about and ask what the fewest bits are that keep the average error under some tolerance $D$:
 
 $$
 R(D) = \min_{p(\hat{x}\,|\,x)\,:\;\mathbb{E}[d(x,\hat{x})]\,\le\,D} I(X;\hat{X}) \tag{6}
@@ -135,7 +129,7 @@ Bat speed is a good example of the tolerance side of this. A fast swing affords 
 
 ### 5.3 The overlap with the uncontrolled manifold
 
-This is where I think there is a real mathematical overlap and not only an analogy. The uncontrolled manifold (UCM) method from Scholz and Schoner starts with a task variable $r$ (say, bat direction at contact) that depends on a bunch of joint angles $\theta$ through $r = f(\theta)$ [17]. The Jacobian $J = \partial f / \partial \theta$ tells you which combinations of joint changes move $r$. Combinations in the null space of $J$ don't move it at all, and that null space is the uncontrolled manifold. You then split each swing's deviation from the mean into the part that lies in the manifold and the part that's orthogonal to it, and compare the variance per degree of freedom in each [18]:
+This is where I think there is a real mathematical overlap and not only an analogy. The uncontrolled manifold (UCM) method from Scholz and Schoner starts with a task variable $r$ (say, bat direction at contact) that depends on a bunch of joint angles $\theta$ through $r = f(\theta)$ [16]. The Jacobian $J = \partial f / \partial \theta$ tells you which combinations of joint changes move $r$. Combinations in the null space of $J$ don't move it at all, and that null space is the uncontrolled manifold. You then split each swing's deviation from the mean into the part that lies in the manifold and the part that's orthogonal to it, and compare the variance per degree of freedom in each [17]:
 
 $$
 V_{UCM} = \frac{\sum_k \lVert \theta_{\parallel,k} \rVert^2}{(n-d)\,N}, \qquad
@@ -148,33 +142,33 @@ $$
 
 with $n$ joint degrees of freedom, a $d$-dimensional task variable and $N$ swings. A positive $\Delta V$ means the variability is being steered into the directions that don't hurt you. Notice how both clouds in Figure 4 have the same total variance, and only the one on the left keeps the bat where it needs to be.
 
-The way I read it, Eq. 8 and Eq. 6 are describing the same thing from two sides. $V_{ORT}$ is the distortion, the error in the thing you care about. $V_{UCM}$ is variance sitting in the $w_i = 0$ dimensions, where rate-distortion says you shouldn't spend any bits. Todorov and Jordan got to the same place from optimal control with what they called the minimum intervention principle, where the controller only corrects deviations that interfere with the task [19]. I haven't seen someone write those down as the same statement, so that's my interpretation and not a theorem, but all three are saying a good controller is precise where it matters and loose where it doesn't.
+The way I read it, Eq. 8 and Eq. 6 are describing the same thing from two sides. $V_{ORT}$ is the distortion, the error in the thing you care about. $V_{UCM}$ is variance sitting in the $w_i = 0$ dimensions, where rate-distortion says you shouldn't spend any bits. Todorov and Jordan got to the same place from optimal control with what they called the minimum intervention principle, where the controller only corrects deviations that interfere with the task [18]. I haven't seen someone write those down as the same statement, so that's my interpretation and not a theorem, but all three are saying a good controller is precise where it matters and loose where it doesn't.
 
 <figure>
 <img src="/images/blog/swing-as-compression/fig4-ucm.svg" alt="Two scatter plots of joint 1 deviation against joint 2 deviation. On the left the cloud is stretched along a dashed diagonal line labeled uncontrolled manifold. On the right the cloud is round with the same total variance." />
 <figcaption><strong>Figure 4.</strong> Toy two-joint example of Eq. 8 and Eq. 9. Both clouds have the same total variance. In (a) almost all of it lies along the manifold where bat direction is unchanged. In (b) it is spread evenly, so the same amount of joint variability produces a lot more error at the bat. Simulated points, not athlete data.</figcaption>
 </figure>
 
-The pitching work from Bloebaum is what got me looking at this in the first place. One preprint found that elite pitchers aren't more or less complex in how they move on average, and what separates them is how reproducible that complexity is from throw to throw [20]. The other is a time-resolved UCM analysis of the delivery, and the title is the finding: skilled pitching is not less joint variability but better-structured joint variability [21]. Gray found something related in a virtual batting study, where training increased the kind of variability that keeps the bat on the ball [22]. Figure 5 is a toy version of what that looks like over the course of a swing. Notice how the joints stay variable all the way to contact while bat direction funnels down.
+The pitching work from Bloebaum is what got me looking at this in the first place. One preprint found that elite pitchers aren't more or less complex in how they move on average, and what separates them is how reproducible that complexity is from throw to throw [19]. The other is a time-resolved UCM analysis of the delivery, and the title is the finding: skilled pitching is not less joint variability but better-structured joint variability [20]. Gray found something related in a virtual batting study, where training increased the kind of variability that keeps the bat on the ball [21]. Figure 5 is a toy version of what that looks like over the course of a swing. Notice how the joints stay variable all the way to contact while bat direction funnels down.
 
 <figure>
 <img src="/images/blog/swing-as-compression/fig3-funnel.svg" alt="Three panels over normalized time from load to contact. Forty simulated joint angle traces that stay spread out, forty bat direction traces that converge toward contact, and the between-swing standard deviation of each, with the bat direction curve dropping while the joint curve stays high." />
-<figcaption><strong>Figure 5.</strong> A toy two-joint swing, drawn the way time-resolved variability is usually shown [21]. (a) One joint across 40 simulated swings. (b) Bat direction, the sum of the two joints, for the same swings. (c) Between-swing SD of each over normalized time. The joints stay variable all the way to contact while the task variable funnels down. Simulated from a seeded toy model, not athlete data.</figcaption>
+<figcaption><strong>Figure 5.</strong> A toy two-joint swing, drawn the way time-resolved variability is usually shown [20]. (a) One joint across 40 simulated swings. (b) Bat direction, the sum of the two joints, for the same swings. (c) Between-swing SD of each over normalized time. The joints stay variable all the way to contact while the task variable funnels down. Simulated from a seeded toy model, not athlete data.</figcaption>
 </figure>
 
 ### 5.4 What the public data looks like
 
 I've seen some of this in the public Statcast bat tracking data. If you take out the part of a hitter's swing-to-swing variation that's explained by the pitch (how high it is, in or away, what type of pitch), the leftover scatter is related to xwOBA at about -0.37 from 2024 through 2026, meaning the tighter hitters tend to produce more. That leftover scatter also holds up year to year at around 0.65, so it looks like a real trait. What I found interesting is that how much a hitter adjusts is a trait too. How much a hitter changes his bat tilt based on pitch height is one of the most stable things I've looked at in public data, close to 0.9 year over year. You can see it in the extreme cases too. On home runs hit on pitches well outside the zone, the postural adjustments get really large when the path isn't "optimal" for the pitch location.
 
-So my current way of thinking about it is that the swing isn't stored like a recording that gets played back. It's more like a short code with a few dials on it, where the sequence and the rhythm stay about the same and the dials move with the pitch. Schmidt's schema theory said something very close to this in 1975, with a generalized motor program that holds the invariant features and a small set of parameters that get set on each attempt [23].
+So my current way of thinking about it is that the swing isn't stored like a recording that gets played back. It's more like a short code with a few dials on it, where the sequence and the rhythm stay about the same and the dials move with the pitch. Schmidt's schema theory said something very close to this in 1975, with a generalized motor program that holds the invariant features and a small set of parameters that get set on each attempt [22].
 
 ## 6. Reconciling the two theories
 
-I lean pretty heavily toward the ecological side in how I coach. I think the environment does most of the teaching, and that a big part of my job is setting up games and constraints where the movement I want is the best solution to the problem. People on that side really don't like the idea of a "motor program," which is the swing being saved in your head like a file, and I mostly agree with them on that. Araujo and Davids have a whole paper asking what exactly is "acquired" in skill acquisition, and their answer is a better fit between the athlete and the environment, not a stored thing [24].
+I lean pretty heavily toward the ecological side in how I coach. I think the environment does most of the teaching, and that a big part of my job is setting up games and constraints where the movement I want is the best solution to the problem. People on that side really don't like the idea of a "motor program," which is the swing being saved in your head like a file, and I mostly agree with them on that. Araujo and Davids have a whole paper asking what exactly is "acquired" in skill acquisition, and their answer is a better fit between the athlete and the environment, not a stored thing [23].
 
 Most of Sections 2 through 4 comes from the other side, the information processing view, and those two sides usually get treated as a disagreement. I think compression is actually a way of reconciling them. Compression is only about how short a description of something can be, and it doesn't say anything about where that description lives, so it doesn't need a file stored in the head.
 
-The dynamical systems version of a skill is an attractor, which is a stable pattern the body settles into. The classic example is the Haken-Kelso-Bunz model, where the coordination between two limbs behaves like a ball rolling downhill on a landscape $V$, and the stable patterns are the bottoms of the wells [25]:
+The dynamical systems version of a skill is an attractor, which is a stable pattern the body settles into. The classic example is the Haken-Kelso-Bunz model, where the coordination between two limbs behaves like a ball rolling downhill on a landscape $V$, and the stable patterns are the bottoms of the wells [24]:
 
 $$
 \dot{x} = -\frac{dV}{dx} + \text{noise} \tag{10}
@@ -188,7 +182,7 @@ $$
 p(x) \propto e^{-V(x)/T} \tag{11}
 $$
 
-Near the bottom of a well with stiffness $k$ that is a Gaussian with variance $T/k$, so its entropy is $\tfrac{1}{2}\log_2(2\pi e\,T/k)$ bits. A deeper, steeper well takes fewer bits to describe (Figure 6). So an attractor state is a version of information minimization, which is compression. Haken, the H in Haken-Kelso-Bunz, made a version of this argument himself, that a system with a huge number of degrees of freedom ends up being described by a few order parameters [26]. Friston's free energy principle is the most formal attempt I know of to say that self-organizing systems settle into attractors by minimizing surprise [27], and surprise is the same $-\log_2 p$ from Section 2.
+Near the bottom of a well with stiffness $k$ that is a Gaussian with variance $T/k$, so its entropy is $\tfrac{1}{2}\log_2(2\pi e\,T/k)$ bits. A deeper, steeper well takes fewer bits to describe (Figure 6). So an attractor state is a version of information minimization, which is compression. Haken, the H in Haken-Kelso-Bunz, made a version of this argument himself, that a system with a huge number of degrees of freedom ends up being described by a few order parameters [25]. Friston's free energy principle is the most formal attempt I know of to say that self-organizing systems settle into attractors by minimizing surprise [26], and surprise is the same $-\log_2 p$ from Section 2.
 
 <figure>
 <img src="/images/blog/swing-as-compression/fig6-attractor.svg" alt="Left: two potential wells, one shallow and one deep. Right: the distribution of states each one produces, wide for the shallow well and narrow for the deep well, with the deep well labeled as 1.5 bits cheaper to describe." />
@@ -199,7 +193,7 @@ I haven't seen this worked out for hitting specifically, and I'm sure people on 
 
 ## 7. What I'd want to measure
 
-None of this is worth much unless it turns into something I can measure. The cleanest version comes from the minimum description length idea [28]: fit a model to a hitter's first $N-1$ swings and ask how many bits it takes to describe swing $N$.
+None of this is worth much unless it turns into something I can measure. The cleanest version comes from the minimum description length idea [27]: fit a model to a hitter's first $N-1$ swings and ask how many bits it takes to describe swing $N$.
 
 $$
 L_N = -\log_2 q\!\left(x_N \mid x_1, \dots, x_{N-1}\right) \tag{12}
@@ -209,9 +203,8 @@ If the prediction errors are roughly Gaussian with SD $\sigma$, the entropy is $
 
 - $L_N$ over time for one hitter. If learning really is compression, it should fall as a skill settles in.
 - The same thing split by Eq. 8 into the part of the movement that changes where the barrel ends up at contact and the part that doesn't. I'd expect the good hitters to only tighten up the first part.
-- Whether the rhythm of the swing stays the same when the whole swing speeds up or slows down, which is what you'd expect if relative timing is the fixed part of the code [23].
+- Whether the rhythm of the swing stays the same when the whole swing speeds up or slows down, which is what you'd expect if relative timing is the fixed part of the code [22].
 - How long the recalibration period lasts after an adjustment in training and how far the output drops during it, which would tell you how tightly packed the old swing was.
-- How many reps it takes someone to figure out a brand new drill, and whether that depends on how much variety they've had in their training [7].
 
 ## 8. Limitations, or things I've already gotten wrong
 
@@ -241,25 +234,24 @@ I don't know yet if what I want to measure is going to hold up, and some of it p
 4. Hick WE. On the rate of gain of information. Quarterly Journal of Experimental Psychology. 1952;4(1):11-26.
 5. Fitts PM. The information capacity of the human motor system in controlling the amplitude of movement. Journal of Experimental Psychology. 1954;47(6):381-391.
 6. Cover TM, Thomas JA. Elements of Information Theory. 2nd ed. Wiley; 2006.
-7. Braun DA, Aertsen A, Wolpert DM, Mehring C. Motor task variation induces structural learning. Current Biology. 2009;19(4):352-357.
-8. Shea JB, Morgan RL. Contextual interference effects on the acquisition, retention, and transfer of a motor skill. Journal of Experimental Psychology: Human Learning and Memory. 1979;5(2):179-187.
-9. Hall KG, Domingues DA, Cavazos R. Contextual interference effects with skilled baseball players. Perceptual and Motor Skills. 1994;78(3):835-841.
-10. Guadagnoli MA, Lee TD. Challenge point: a framework for conceptualizing the effects of various practice conditions in motor learning. Journal of Motor Behavior. 2004;36(2):212-224.
-11. Miller GA. The magical number seven, plus or minus two: some limits on our capacity for processing information. Psychological Review. 1956;63(2):81-97.
-12. Newell A, Rosenbloom PS. Mechanisms of skill acquisition and the law of practice. In: Anderson JR, ed. Cognitive Skills and Their Acquisition. Erlbaum; 1981:1-55.
-13. Henry FM, Rogers DE. Increased response latency for complicated movements and a "memory drum" theory of neuromotor reaction. Research Quarterly. 1960;31(3):448-458.
-14. Masters RSW. Knowledge, knerves and know-how: the role of explicit versus implicit knowledge in the breakdown of a complex motor skill under pressure. British Journal of Psychology. 1992;83(3):343-358.
-15. Bernstein NA. The Co-ordination and Regulation of Movements. Pergamon Press; 1967.
-16. Shannon CE. Coding theorems for a discrete source with a fidelity criterion. IRE National Convention Record. 1959;7(4):142-163.
-17. Scholz JP, Schoner G. The uncontrolled manifold concept: identifying control variables for a functional task. Experimental Brain Research. 1999;126(3):289-306.
-18. Latash ML, Scholz JP, Schoner G. Motor control strategies revealed in the structure of motor variability. Exercise and Sport Sciences Reviews. 2002;30(1):26-31.
-19. Todorov E, Jordan MI. Optimal feedback control as a theory of motor coordination. Nature Neuroscience. 2002;5(11):1226-1235.
-20. Bloebaum A. Reproducibility of nonlinear movement complexity, not complexity itself, distinguishes elite throwing. SportRxiv preprint. doi:10.51224/SportRxiv.919
-21. Bloebaum A. Skilled pitching is not less joint variability but better-structured joint variability: a time-resolved uncontrolled-manifold analysis of the baseball pitching delivery. SportRxiv preprint. doi:10.51224/SportRxiv.1010
-22. Gray R. Changes in movement coordination associated with skill acquisition in baseball batting: freezing/freeing degrees of freedom and functional variability. Frontiers in Psychology. 2020;11:1295.
-23. Schmidt RA. A schema theory of discrete motor skill learning. Psychological Review. 1975;82(4):225-260.
-24. Araujo D, Davids K. What exactly is acquired during skill acquisition? Journal of Consciousness Studies. 2011;18(3-4):7-23.
-25. Haken H, Kelso JAS, Bunz H. A theoretical model of phase transitions in human hand movements. Biological Cybernetics. 1985;51(5):347-356.
-26. Haken H. Information and Self-Organization: A Macroscopic Approach to Complex Systems. Springer; 1988.
-27. Friston K. The free-energy principle: a unified brain theory? Nature Reviews Neuroscience. 2010;11(2):127-138.
-28. Rissanen J. Modeling by shortest data description. Automatica. 1978;14(5):465-471.
+7. Shea JB, Morgan RL. Contextual interference effects on the acquisition, retention, and transfer of a motor skill. Journal of Experimental Psychology: Human Learning and Memory. 1979;5(2):179-187.
+8. Hall KG, Domingues DA, Cavazos R. Contextual interference effects with skilled baseball players. Perceptual and Motor Skills. 1994;78(3):835-841.
+9. Guadagnoli MA, Lee TD. Challenge point: a framework for conceptualizing the effects of various practice conditions in motor learning. Journal of Motor Behavior. 2004;36(2):212-224.
+10. Miller GA. The magical number seven, plus or minus two: some limits on our capacity for processing information. Psychological Review. 1956;63(2):81-97.
+11. Newell A, Rosenbloom PS. Mechanisms of skill acquisition and the law of practice. In: Anderson JR, ed. Cognitive Skills and Their Acquisition. Erlbaum; 1981:1-55.
+12. Henry FM, Rogers DE. Increased response latency for complicated movements and a "memory drum" theory of neuromotor reaction. Research Quarterly. 1960;31(3):448-458.
+13. Masters RSW. Knowledge, knerves and know-how: the role of explicit versus implicit knowledge in the breakdown of a complex motor skill under pressure. British Journal of Psychology. 1992;83(3):343-358.
+14. Bernstein NA. The Co-ordination and Regulation of Movements. Pergamon Press; 1967.
+15. Shannon CE. Coding theorems for a discrete source with a fidelity criterion. IRE National Convention Record. 1959;7(4):142-163.
+16. Scholz JP, Schoner G. The uncontrolled manifold concept: identifying control variables for a functional task. Experimental Brain Research. 1999;126(3):289-306.
+17. Latash ML, Scholz JP, Schoner G. Motor control strategies revealed in the structure of motor variability. Exercise and Sport Sciences Reviews. 2002;30(1):26-31.
+18. Todorov E, Jordan MI. Optimal feedback control as a theory of motor coordination. Nature Neuroscience. 2002;5(11):1226-1235.
+19. Bloebaum A. Reproducibility of nonlinear movement complexity, not complexity itself, distinguishes elite throwing. SportRxiv preprint. doi:10.51224/SportRxiv.919
+20. Bloebaum A. Skilled pitching is not less joint variability but better-structured joint variability: a time-resolved uncontrolled-manifold analysis of the baseball pitching delivery. SportRxiv preprint. doi:10.51224/SportRxiv.1010
+21. Gray R. Changes in movement coordination associated with skill acquisition in baseball batting: freezing/freeing degrees of freedom and functional variability. Frontiers in Psychology. 2020;11:1295.
+22. Schmidt RA. A schema theory of discrete motor skill learning. Psychological Review. 1975;82(4):225-260.
+23. Araujo D, Davids K. What exactly is acquired during skill acquisition? Journal of Consciousness Studies. 2011;18(3-4):7-23.
+24. Haken H, Kelso JAS, Bunz H. A theoretical model of phase transitions in human hand movements. Biological Cybernetics. 1985;51(5):347-356.
+25. Haken H. Information and Self-Organization: A Macroscopic Approach to Complex Systems. Springer; 1988.
+26. Friston K. The free-energy principle: a unified brain theory? Nature Reviews Neuroscience. 2010;11(2):127-138.
+27. Rissanen J. Modeling by shortest data description. Automatica. 1978;14(5):465-471.
