@@ -1,6 +1,6 @@
 ---
 title: 'Thinking About the Swing as a Compression Problem'
-summary: 'A working paper on whether the math behind data compression is a useful way to describe how a hitter learns.'
+summary: 'A working paper arguing that data compression is a way to reconcile the information processing and ecological views of how a hitter learns.'
 date: 2026-11-23
 tags: ['hitting', 'motor learning', 'information theory']
 draft: true
@@ -12,13 +12,15 @@ draft: true
 
 ## Abstract
 
-[3Blue1Brown's series on compression](https://www.3blue1brown.com/lessons/entropy/) got me thinking about a lot of what I've been reading in motor learning and seeing in swing-to-swing variability. This post covers where information theory already shows up in motor control, how cross-entropy maps onto practice design, why chunking explains automaticity, and why a good swing is closer to lossy compression than lossless. I then connect that to the uncontrolled manifold, argue that compression reconciles the information processing and ecological views of motor learning, and lay out what I'd measure. Every figure is a schematic drawn from the equations or a toy model, and none of them are athlete data.
+[3Blue1Brown's series on compression](https://www.3blue1brown.com/lessons/entropy/) got me thinking about a lot of what I've been reading in motor learning and seeing in swing-to-swing variability. The argument of this post is that compression reconciles the information processing and ecological views of motor learning. To get there I cover where information theory already shows up in motor control, how cross-entropy maps onto practice design, why chunking explains automaticity, why a good swing is closer to lossy compression than lossless, and how that connects to the uncontrolled manifold. Every figure is a schematic drawn from the equations or a toy model, and none of them are athlete data.
 
 ## 1. Introduction
 
 This started with 3Blue1Brown's mini-series on compression [1, 2]. The idea that stuck with me is that compressing something well requires predicting it well, because if you know what's coming next you barely have to write it down.
 
 I've recently been exploring motor learning and ecological dynamics, along with how much hitters vary from swing to swing, and the series sounded like what I was already thinking about. This is me working through whether it's a useful way to describe how hitters learn.
+
+Where I ended up is that it does more than describe learning. Sections 2 through 4 come from the information processing side of motor learning, Section 5 covers the variability work that the ecological side leans on, and Section 6 argues that compression makes them the same story.
 
 ## 2. Movement was being measured in bits a long time ago
 
@@ -162,11 +164,11 @@ Public Statcast bat tracking shows some of this. Take out the part of a hitter's
 
 So I don't think of the swing as a recording that gets played back. It's closer to a short code with a few dials on it, where the sequence and rhythm stay about the same and the dials move with the pitch. Schmidt's schema theory said nearly this in 1975, with a generalized motor program holding the invariant features and a few parameters set on each attempt [22].
 
-## 6. Reconciling the two theories
+## 6. Conclusion: reconciling the two theories
 
 I lean ecological in how I coach. The environment does most of the teaching, and a lot of my job is building games and constraints where the movement I want is the best solution to the problem. That side rejects the "motor program," the swing saved in your head like a file, and I mostly agree. Araujo and Davids argue that what gets "acquired" is a better fit between the athlete and the environment and not a stored thing [23].
 
-Sections 2 through 4 come from the information processing side, and the two usually get treated as a disagreement. I think compression reconciles them. It only concerns how short a description can be and says nothing about where the description lives, so it doesn't need a file in the head.
+The two views usually get treated as a disagreement, and I think compression reconciles them. It only concerns how short a description can be and says nothing about where the description lives, so it doesn't need a file in the head.
 
 The dynamical systems version of a skill is an attractor, a stable pattern the body settles into. In the Haken-Kelso-Bunz model, the coordination between two limbs behaves like a ball rolling downhill on a landscape $V$, and the stable patterns are the bottoms of the wells [24]:
 
@@ -191,40 +193,7 @@ Near the bottom of a well with stiffness $k$ this is a Gaussian with variance $T
 
 I haven't seen this worked out for hitting, and both sides would have issues with parts of it. But a hitter tuned in to the right information gets surprised less often, which is a smaller KL term in Eq. 4, and the ecological side calls that attunement.
 
-## 7. What I'd want to measure
-
-None of this is worth much unless I can measure it. The cleanest version comes from minimum description length [27]. Fit a model to a hitter's first $N-1$ swings and ask how many bits swing $N$ takes to describe:
-
-$$
-L_N = -\log_2 q\!\left(x_N \mid x_1, \dots, x_{N-1}\right) \tag{12}
-$$
-
-If the prediction errors are roughly Gaussian with SD $\sigma$, the entropy is $\tfrac{1}{2}\log_2(2\pi e\,\sigma^2)$ bits per dimension, so halving the leftover SD saves one bit. That puts everything I'd want to look at in the same unit:
-
-- $L_N$ over time for one hitter, which should fall as a skill settles in.
-- $L_N$ split by Eq. 8 into what moves the barrel at contact and what doesn't. I'd expect the good hitters to only tighten up the first part.
-- Whether the rhythm of the swing holds when its tempo changes, as it should if relative timing is the fixed part of the code [22].
-- How long the recalibration period lasts after an adjustment in training and how far output drops during it, which would show how tightly packed the old swing was.
-
-## 8. Limitations, or things I've already gotten wrong
-
-I've been working on a few of these, and mostly I've learned how easy it is to fool yourself.
-
-Timing gets into everything. A lot of the measures of movement "complexity" change when a swing takes a few milliseconds longer, even if its shape is identical. If you don't align the swings in time first, you can end up measuring timing consistency and calling it complexity. Timing consistency is worth knowing about, but it's a different claim, and it took me way too long to separate the two.
-
-Comparing hitters to each other doesn't tell you what happens inside one hitter. Better hitters being more repeatable doesn't mean that making one hitter more repeatable makes him better, and those two questions have given me different answers more than once.
-
-One session isn't much to go on. Swing-to-swing spread bounces around from day to day far more than the average swing does.
-
-The UCM result depends entirely on the task variable you pick in Eq. 8, and hitting is harder than pitching here because the goal changes with every pitch.
-
-Tools can also make things up. I built a small physics model of the swing to map which combinations of timing produce solid contact, and the first maps had intricate, cool looking edges that I got pretty excited about. All of it came from a bug in how the simulation stepped through time. Once I fixed it, the region of good solutions was a plain smooth area a few tens of milliseconds wide, which is less exciting but I trust it a lot more.
-
-## 9. Where my head is at
-
-I'm not saying the brain runs a zip program. What I like is having one way to talk about things we usually treat separately, like how repeatable a swing is, how well it adjusts, how automatic it feels, how hard it is to change, and how well practice carries over to games. Each of those is asking how short a description a hitter has found for a swing that still works.
-
-Some of what I want to measure probably won't hold up. I'd still rather be wrong about something I can test than keep going back and forth on feel versus mechanics.
+So I don't think coaches have to pick a side. To me both theories describe a hitter finding a shorter description of a swing that still works, and the practice environment decides which description that ends up being.
 
 ## References
 
@@ -254,4 +223,3 @@ Some of what I want to measure probably won't hold up. I'd still rather be wrong
 24. Haken H, Kelso JAS, Bunz H. A theoretical model of phase transitions in human hand movements. Biological Cybernetics. 1985;51(5):347-356.
 25. Haken H. Information and Self-Organization: A Macroscopic Approach to Complex Systems. Springer; 1988.
 26. Friston K. The free-energy principle: a unified brain theory? Nature Reviews Neuroscience. 2010;11(2):127-138.
-27. Rissanen J. Modeling by shortest data description. Automatica. 1978;14(5):465-471.
