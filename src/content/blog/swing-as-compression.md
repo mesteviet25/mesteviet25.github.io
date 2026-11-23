@@ -6,6 +6,10 @@ tags: ['hitting', 'motor learning', 'information theory']
 draft: true
 ---
 
+<figure>
+<img src="/images/blog/swing-as-compression/header.jpg" alt="A man in a baseball cap, shirt and tie gesturing in front of a wall covered in papers connected by red string." />
+</figure>
+
 ## Abstract
 
 I went down a rabbit hole on data compression and came out thinking it lines up with a lot of what I've been reading in motor learning and what I've been looking at in swing-to-swing variability. This post is me trying to work through that. I walk through where information theory already shows up in motor control (Fitts's and Hick's laws), why "compression is prediction" maps onto pretraining and practice design, why chunking is a reasonable explanation for automaticity, and why the right comparison for a good swing is lossy compression (rate-distortion) instead of lossless. Then I try to connect that to the uncontrolled manifold work, which I think is the closest real mathematical overlap, argue that compression is a way of reconciling the information processing and ecological views of motor learning, and lay out what I'd want to measure. Every figure in here is a schematic drawn from the equations or from a toy model, and none of them are athlete data.
