@@ -20,6 +20,8 @@ title: 'What It Is'
 summary: 'One or two sentences. Shows on the index and under the headline.'
 date: 2026-09-08
 tags: ['hitting', 'data']
+image: '/images/blog/my-post/card.jpg'       # optional: card image on the blog index
+ogImage: '/images/blog/my-post/card-og.jpg' # optional: 1200x630 link-preview image, falls back to image
 draft: false
 ---
 

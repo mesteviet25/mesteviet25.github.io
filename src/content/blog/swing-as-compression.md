@@ -3,7 +3,9 @@ title: 'Thinking About the Swing as a Compression Problem'
 summary: 'A working paper arguing that data compression is a way to reconcile the information processing and ecological views of how a hitter learns.'
 date: 2026-11-23
 tags: ['hitting', 'motor learning', 'information theory']
-draft: true
+image: '/images/blog/swing-as-compression/header.jpg'
+ogImage: '/images/blog/swing-as-compression/header-og.jpg'
+draft: false
 ---
 
 <figure>

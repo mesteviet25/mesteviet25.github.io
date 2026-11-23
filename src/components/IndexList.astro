@@ -8,6 +8,7 @@ interface Item {
   title: string;
   summary: string;
   meta: string;
+  image?: string;
 }
 
 interface Props {
@@ -24,6 +25,7 @@ const { items, start = 1 } = Astro.props;
       <a class="row reveal" href={item.href} style={`--i:${i + 1}`}>
         <span class="row__num">{String(i + start).padStart(2, '0')}</span>
         <div>
+          {item.image && <img class="row__shot" src={item.image} alt="" loading="lazy" />}
           <h2 class="row__title">{item.title}</h2>
           <p class="row__summary">{item.summary}</p>
         </div>
