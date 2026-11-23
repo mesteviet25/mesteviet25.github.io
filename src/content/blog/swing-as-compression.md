@@ -164,6 +164,8 @@ Public Statcast bat tracking shows some of this. Take out the part of a hitter's
 
 So I don't think of the swing as a recording that gets played back. It's closer to a short code with a few dials on it, where the sequence and rhythm stay about the same and the dials move with the pitch. Schmidt's schema theory said nearly this in 1975, with a generalized motor program holding the invariant features and a few parameters set on each attempt [22].
 
+This also accounts somewhat for the very talented hitters who are quick to make adjustments. If an adjustment is something their dials already cover, it only takes a few bits and there's almost no recalibration period. A hitter whose code doesn't have that dial has to unpack the swing and re-compress it, as in Section 4.
+
 ## 6. Conclusion: reconciling the two theories
 
 I lean ecological in how I coach. The environment does most of the teaching, and a lot of my job is building games and constraints where the movement I want is the best solution to the problem. That side rejects the "motor program," the swing saved in your head like a file, and I mostly agree. Araujo and Davids argue that what gets "acquired" is a better fit between the athlete and the environment and not a stored thing [23].
