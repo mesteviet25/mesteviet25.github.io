@@ -1,7 +1,7 @@
 """Figures for the blog post src/content/blog/swing-as-compression.md.
 
-Every figure is a schematic drawn from equations or a seeded toy model.
-No athlete data and no measured data of any kind is read here.
+Figures 1, 2 and 6 are schematics drawn from equations. No athlete data and no measured data of
+any kind is read here. Figures 3, 4 and 5 come from elsewhere (see the note below).
 
     python scripts/blog_figures/swing_as_compression.py
 """
@@ -28,8 +28,6 @@ plt.rcParams.update({
     "font.size": 11.5, "axes.titlesize": 12, "axes.titleweight": "bold", "axes.titlelocation": "left",
     "lines.linewidth": 2, "svg.fonttype": "none", "font.family": "DejaVu Sans",
 })
-
-rng = np.random.default_rng(12)
 
 
 def save(fig, name):
@@ -81,89 +79,9 @@ ax.set(xlabel="practice trials (log scale)", ylabel="bits per swing", ylim=(2.2,
 save(fig, "fig2-cross-entropy.svg")
 
 
-# Toy two-joint swing used by figures 3 and 4 --------------------------------------------
-t = np.linspace(0, 1, 101)
-K = 40
-along = rng.normal(0, 6.0, K)       # deviation that trades one joint against the other
-across = rng.normal(0, 4.0, K)      # deviation that moves the task variable
-g = 0.45 + 0.55 * t                 # the trade-off grows through the swing
-h = 1.0 - 0.86 * t ** 2             # task error is squeezed out toward contact
-base1 = 20 + 70 / (1 + np.exp(-9 * (t - 0.55)))
-base2 = -10 + 55 / (1 + np.exp(-11 * (t - 0.68)))
-th1 = base1 + np.outer(along, g) + 0.5 * np.outer(across, h)
-th2 = base2 - np.outer(along, g) + 0.5 * np.outer(across, h)
-task = th1 + th2
-
-# Figure 3: ensembles and time-resolved between-trial SD -----------------------------------
-fig, axes = plt.subplots(1, 3, figsize=(10.2, 3.5))
-for ax, y, col, title in [
-    (axes[0], th1, BLUE, "(a) one joint, 40 swings"),
-    (axes[1], task, PINK, "(b) bat direction, same swings"),
-]:
-    ax.plot(100 * t, y.T, color=col, alpha=0.22, linewidth=0.9)
-    ax.plot(100 * t, y.mean(0), color=INK, linewidth=1.8)
-    ax.set(title=title, xlabel="normalized time, load to contact [%]", ylabel="angle [deg]")
-ax = axes[2]
-ax.plot(100 * t, th1.std(0, ddof=1), color=BLUE)
-ax.plot(100 * t, task.std(0, ddof=1), color=PINK, linestyle=(0, (5, 3)))
-ax.annotate("joint", (62, th1.std(0, ddof=1)[62]), xytext=(0, 8), textcoords="offset points", color=INK, fontsize=10.5)
-ax.annotate("bat direction", (60, task.std(0, ddof=1)[60]), xytext=(-78, -16), textcoords="offset points",
-            color=INK, fontsize=10.5)
-ax.set(title="(c) between-swing SD", xlabel="normalized time, load to contact [%]", ylabel="SD [deg]", ylim=(0, None))
-fig.tight_layout(w_pad=2.0)
-save(fig, "fig3-funnel.svg")
-
-# Figure 4: uncontrolled manifold at contact ---------------------------------------------
-fig, axes = plt.subplots(1, 2, figsize=(8.4, 4.1), sharex=True, sharey=True)
-N = 250
-al = rng.normal(0, 6.0, N)
-ac = rng.normal(0, 1.1, N)
-structured = np.column_stack([al + 0.5 * ac, -al + 0.5 * ac])
-total_var = structured.var(0, ddof=1).sum()
-flat = rng.normal(0, np.sqrt(total_var / 2), (N, 2))
-lim = 16
-for ax, pts, col, title in [
-    (axes[0], structured, PINK, "(a) structured: synergy index > 0"),
-    (axes[1], flat, BLUE, "(b) same total variance, unstructured"),
-]:
-    ax.plot([-lim, lim], [lim, -lim], color=MUTED, linewidth=1.2, linestyle=(0, (5, 4)))
-    ax.scatter(pts[:, 0], pts[:, 1], s=14, color=col, alpha=0.75, edgecolor=SURFACE, linewidth=0.4)
-    ax.set(title=title, xlabel="joint 1 deviation [deg]", xlim=(-lim, lim), ylim=(-lim, lim), aspect="equal")
-axes[0].set_ylabel("joint 2 deviation [deg]")
-axes[0].text(-15, -14.6, "dashed line: uncontrolled manifold\n(bat direction unchanged)", color=INK, fontsize=10)
-axes[0].annotate("", (5.5, 5.5), (0, 0), arrowprops=dict(arrowstyle="->", color=INK, linewidth=1.4))
-axes[0].annotate("direction that\nmoves the bat", (5.5, 5.5), xytext=(4, 2), textcoords="offset points",
-                 color=INK, fontsize=10)
-fig.tight_layout(w_pad=2.0)
-save(fig, "fig4-ucm.svg")
-
-
-# Figure 5: rate-distortion and reverse water-filling ------------------------------------
-fig, (a, b) = plt.subplots(1, 2, figsize=(8.8, 3.6))
-d = np.linspace(0.01, 1.2, 400)
-a.plot(d, np.maximum(0, 0.5 * np.log2(1 / d)), color=PINK)
-a.annotate("tight tolerance:\nexpensive", (0.03, 2.53), xytext=(14, -6), textcoords="offset points", color=INK,
-           fontsize=10.5)
-a.annotate("loose tolerance:\nfree", (1.0, 0), xytext=(-22, 26), textcoords="offset points", color=INK, fontsize=10.5)
-a.set(title="(a) R(D) for one Gaussian dimension", xlabel="allowed error D / variance", ylabel="rate [bits]",
-      ylim=(-0.08, 3.4))
-
-labels = ["bat direction", "contact depth", "elbow path", "hand path", "head sway"]
-var = np.array([1.0, 0.8, 1.3, 0.9, 0.5])
-weight = np.array([1.0, 0.7, 0.0, 0.0, 0.0])        # task weight: zero means outcome does not care
-dist = np.where(weight > 0, 0.06 / np.maximum(weight, 1e-9), var)
-dist = np.minimum(dist, var)
-bits_alloc = 0.5 * np.log2(var / dist)
-ypos = np.arange(len(labels))[::-1]
-b.barh(ypos, bits_alloc, color=[PINK if w > 0 else BLUE for w in weight], height=0.55)
-for y, v, w in zip(ypos, bits_alloc, weight):
-    b.text(v + 0.06, y, f"{v:.1f} bits" if w > 0 else "0 bits (free to vary)", va="center", color=INK, fontsize=10.5)
-b.set_yticks(ypos, labels)
-b.tick_params(axis="y", colors=INK)
-b.grid(axis="y", visible=False)
-b.set(title="(b) where the bits go", xlabel="rate spent [bits]", xlim=(0, 3.4))
-fig.tight_layout(w_pad=2.5)
-save(fig, "fig5-rate-distortion.svg")
+# fig3-funnel.svg, fig4-ucm.svg and fig5-rate-distortion.svg are not drawn here. They are cohort
+# averages from lab motion capture, built by a generator that is not part of this repository.
+# Running this script leaves them untouched.
 
 # Figure 6: attractor depth and the bits needed to describe the state ----------------------
 fig, (a, b) = plt.subplots(1, 2, figsize=(8.8, 3.6))
@@ -174,8 +92,8 @@ for k, col, style, name in [(1.0, BLUE, "-", "shallow well"), (8.0, PINK, (0, (5
     sd = np.sqrt(temp / k)
     b.plot(x, np.exp(-0.5 * (x / sd) ** 2) / (sd * np.sqrt(2 * np.pi)), color=col, linestyle=style)
 a.set(title="(a) landscape V(x)", xlabel="coordination state x", ylabel="V(x)", ylim=(0, 6))
-a.annotate("shallow well", (2.3, 0.5 * 2.3 ** 2), xytext=(-84, -4), textcoords="offset points", color=INK, fontsize=10.5)
-a.annotate("deep well", (0.95, 0.5 * 8 * 0.95 ** 2), xytext=(8, 4), textcoords="offset points", color=INK, fontsize=10.5)
+a.annotate("shallow well", (1.7, 0.5 * 1.7 ** 2), xytext=(10, -16), textcoords="offset points", color=INK, fontsize=10.5)
+a.annotate("deep well", (-1.1, 0.5 * 8 * 1.1 ** 2), xytext=(-70, 0), textcoords="offset points", color=INK, fontsize=10.5)
 b.set(title="(b) where the system ends up", xlabel="coordination state x", ylabel="probability density")
 b.annotate("shallow well", (1.3, 0.17), xytext=(6, 8), textcoords="offset points", color=INK, fontsize=10.5)
 b.annotate("deep well:\n1.5 bits cheaper\nto describe", (0.3, 0.8), xytext=(14, -4), textcoords="offset points",
@@ -183,4 +101,4 @@ b.annotate("deep well:\n1.5 bits cheaper\nto describe", (0.3, 0.8), xytext=(14, 
 fig.tight_layout(w_pad=2.5)
 save(fig, "fig6-attractor.svg")
 
-print("wrote", sorted(p.name for p in OUT.glob("*.svg")))
+print("wrote fig1-hick-fitts.svg, fig2-cross-entropy.svg, fig6-attractor.svg")
