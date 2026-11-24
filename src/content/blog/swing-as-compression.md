@@ -58,11 +58,11 @@ Here $RT$ is reaction time, $MT$ is movement time, $n$ is the number of equally 
 <figcaption><strong>Figure 2.</strong> Schematic of Eq. 2 and Eq. 3. The slopes and intercepts are made up for illustration.</figcaption>
 </figure>
 
-This matters for hitting because the hitter has almost no time. Hitters have to make very quick decisions based on limited information, with a pitcher who is attempting to be deceptive in one way or another. While there are competing theories about when a hitter "decides" to swing, if time is linear in bits, there is not enough time to specify a whole swing from scratch. The swing has to already exist in a compressed form in a way that can be adjusted with very little information.
+This matters for hitting because the hitter has almost no time. He has to read the pitch while the pitcher is trying to keep him from figuring out what is coming.
 
-Practice changes the numbers. Mowbray and Rhoades found that with enough practice, reaction time stopped rising between two and four choices \[[11](#ref-11)\]. The slope $b$ in Eq. 2 is therefore not a fixed property of the person. A practiced choice no longer costs its full number of bits, which is what a compressed form would do.
+Practice changes the numbers. Mowbray and Rhoades found that with enough practice, reaction time stopped rising between two and four choices \[[11](#ref-11)\]. The slope $b$ in Eq. 2 is therefore not a fixed property of the person.
 
-That leaves two questions, which are how much of the movement practice can organize in advance and what still has to change as the hitter reads the pitch. I start with what practice teaches the hitter to expect.
+That leaves two questions. How much of the movement can practice organize in advance, and what still has to change as the hitter reads the pitch? I start with what practice teaches the hitter to expect.
 
 ## 3. Compression is prediction
 
@@ -252,9 +252,9 @@ A swing has many directions to vary in, and the well does not have to be equally
 
 Neither field would be surprised by this. Haken showed that a system with a huge number of degrees of freedom ends up described by a few quantities, which he called order parameters \[[34](#ref-34)\]. Friston's free energy principle is the most formal attempt I know of to say that self-organizing systems settle into attractors by minimizing surprise \[[35](#ref-35)\], and surprise is his word for the same $-\log_2 p$ that Section 2 started with.
 
-The ecological view uses the word information in Gibson's sense, which is structure in the light reaching the eye that specifies what the environment allows the animal to do \[[36](#ref-36)\]. Shannon's information is a count of bits and carries no meaning. I do not think that difference keeps the two views apart, because both describe learning a specific task in the same way. The hitter starts with a general model, which the ecological view would call his landscape of affordances. The context of the task then reweights that landscape: this pitcher, this pitch shape, the game I built in the cage. In Gibson's sense, information is what does the reweighting. In Shannon's sense, bits measure how much reweighting it takes, and that measure is the KL divergence from Eq. 4, here between the general model and the one the task calls for. A landscape whose affordances already fit the tasks a hitter faces is a more compressible model, and it takes less information to attune to any one of them.
+The ecological view uses the word information in Gibson's sense, which is structure in the light reaching the eye that specifies what the environment allows the animal to do \[[36](#ref-36)\]. Shannon's information is a count of bits and carries no meaning. One question I would like to test is whether the KL term in Eq. 4 gets smaller as a hitter learns to pick up the cues that tell him how a pitch will move.
 
-So my answer to the question from Section 1 is that a hitter does not learn one movement. He learns a compressed form of the mapping from the pitch to the swing, which keeps what the bat depends on and lets the rest vary. A hitter who is tuned in to the right information is surprised less often, which is a smaller KL term in Eq. 4. The ecological view calls that attunement. So I do not think coaches have to pick a side. Both theories describe a hitter who has found a shorter description of a swing that still works, and the practice environment decides which description he ends up with.
+So my answer to the question from Section 1 is that a hitter does not learn one movement. He learns a compressed form of the mapping from the pitch to the swing, which keeps what the bat depends on and lets the rest vary. So I do not think coaches have to pick a side. Both theories describe a hitter who has found a shorter description of a swing that still works, and the practice environment decides which description he ends up with.
 
 ## 7. What mixed-pitch lab data would add
 
