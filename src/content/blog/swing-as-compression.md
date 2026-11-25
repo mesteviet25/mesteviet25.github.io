@@ -270,6 +270,8 @@ The third is to test the well in Section 6. A pitch that moves differently from 
 
 One thing would still be missing, which is the rate in Eq. 6. Nothing here measures the bits that the hitter's control uses, and mixed-pitch data would not change that. It would show where the precision goes, and that is the part of the argument that most needs a direct test.
 
+So where this stands is that compression is a reasonable way to describe how hitters adjust. It separates the part of a swing that follows the pitch from the part that does not, and the part that follows the pitch is the one that goes with missing less. Whether it can also be used to evaluate hitters is an open question, and I do not think the data I have can answer it yet.
+
 ## References
 
 <ol>
