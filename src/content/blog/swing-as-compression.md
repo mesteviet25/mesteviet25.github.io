@@ -95,7 +95,7 @@ Machine learning has a name for that gap between practice and transfer. A model 
 
 There are two ways to end up with a bad model.
 
-The first is the mix of pitches. A hitter can learn the rhythm of a drill so well that he starts on time and does not read the ball, so for that round to carry over to a game it has to include some of the cues and uncertainty he will face there.
+The first is bad data. A model can only learn the distribution it is trained on, and a model trained on the wrong distribution gets good at the wrong thing. For a hitter the data is the mix of pitches he practices against. If that mix does not look like what he sees in a game, his expectations fit the drill and not the game. A hitter can learn the rhythm of a drill so well that he starts on time and does not read the ball. For a round to carry over, it has to include some of the cues and uncertainty he will face in a game.
 
 The second is a bad value function, meaning the thing the learner is rewarded for. A model can train on good data and still be wrong if the reward points at the wrong target. A hitter who is told that backside ground balls are good will get efficient at producing them. Section 5.2 will show that the measure of error decides where the precision goes, so a wrong measure protects the wrong outcome.
 
